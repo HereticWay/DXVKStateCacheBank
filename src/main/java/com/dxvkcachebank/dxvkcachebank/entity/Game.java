@@ -2,10 +2,7 @@ package com.dxvkcachebank.dxvkcachebank.entity;
 
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.List;
 
 @Entity
@@ -15,13 +12,18 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(
+            nullable = false,
+            unique = true
+    )
     private String name;
 
-    private List<User> contributors;
-
-    private CacheFile latestCache;
-
+    @OneToMany(mappedBy = "game")
     private List<CacheFile> contributions;
 
+    @Column(
+            nullable = false,
+            unique = true
+    )
     private Long steamId;
 }
