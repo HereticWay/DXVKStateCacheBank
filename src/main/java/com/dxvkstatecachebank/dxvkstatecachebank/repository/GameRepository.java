@@ -1,6 +1,6 @@
-package com.dxvkcachebank.dxvkcachebank.repository;
+package com.dxvkstatecachebank.dxvkstatecachebank.repository;
 
-import com.dxvkcachebank.dxvkcachebank.entity.Game;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

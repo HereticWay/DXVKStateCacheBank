@@ -1,6 +1,6 @@
-package com.dxvkcachebank.dxvkcachebank.controller;
+package com.dxvkstatecachebank.dxvkstatecachebank.controller;
 
-import com.dxvkcachebank.dxvkcachebank.service.CacheFileService;
+import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

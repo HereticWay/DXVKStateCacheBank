@@ -1,7 +1,6 @@
-package com.dxvkcachebank.dxvkcachebank.entity;
+package com.dxvkstatecachebank.dxvkstatecachebank.entity;
 
 import lombok.Data;
-import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

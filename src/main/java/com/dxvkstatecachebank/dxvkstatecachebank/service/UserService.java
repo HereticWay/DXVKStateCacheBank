@@ -1,6 +1,6 @@
-package com.dxvkcachebank.dxvkcachebank.service;
+package com.dxvkstatecachebank.dxvkstatecachebank.service;
 
-import com.dxvkcachebank.dxvkcachebank.repository.UserRepository;
+import com.dxvkstatecachebank.dxvkstatecachebank.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package com.dxvkcachebank.dxvkcachebank;
+package com.dxvkstatecachebank.dxvkstatecachebank;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
