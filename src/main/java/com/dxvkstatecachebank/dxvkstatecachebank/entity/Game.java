@@ -18,6 +18,9 @@ public class Game {
     )
     private String name;
 
+    @OneToOne(mappedBy = "game")
+    private IncrementalCacheFile latestCacheFile;
+
     @OneToMany(mappedBy = "game")
     private List<CacheFile> contributions;
 
