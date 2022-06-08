@@ -14,7 +14,7 @@ public class GameInfoDto {
     private String name;
     //private IncrementalCacheFileView incrementalCacheFile;
     //private List<CacheFileView> contributions;
-    String incrementalCacheFileLink; // TODO: Write a mapper that makes a proper link to get the latest cache file info
-    private String contributionsLink; // TODO: Write a mapper that makes a proper linkt to get the contributed cache files
+    String incrementalCacheFileLink;
+    private String contributionsLink;
     private Long steamId;
 }

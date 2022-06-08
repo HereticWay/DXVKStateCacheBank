@@ -17,7 +17,7 @@ public class CacheFileInfoDto {
     //private User uploader;
     //private Game game;
     //private Blob data;
-    private String uploaderLink; // TODO: Write a mapper that makes a proper link to get the uploader
-    private String gameLink; // TODO: Write a mapper that makes a proper link to get the game
-    private String dataLink; // TODO: Write a mapper that makes a proper link to get the cache file data
+    private String uploaderLink;
+    private String gameLink;
+    private String dataLink;
 }

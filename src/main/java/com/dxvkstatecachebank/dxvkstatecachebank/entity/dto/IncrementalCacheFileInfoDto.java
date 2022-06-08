@@ -16,6 +16,6 @@ public class IncrementalCacheFileInfoDto {
     private LocalDateTime lastUpdateTime;
     // private Game game;
     // private Blob data;
-    private String gameLink; // TODO: Write a mapper that makes a proper link to get the game
-    private String dataLink; // TODO: Write a mapper that makes a proper link to get the latest cache file data
+    private String gameLink;
+    private String dataLink;
 }

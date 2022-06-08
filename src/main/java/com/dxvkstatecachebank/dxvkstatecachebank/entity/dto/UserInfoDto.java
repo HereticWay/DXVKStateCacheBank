@@ -15,6 +15,6 @@ public class UserInfoDto {
     private String email;
     //private Blob profilePicture;
     //private List<CacheFileView> contributions;
-    private String profilePictureLink; // TODO: Write a mapper that makes a proper link to get the profile picture
-    private String contributionsLink; // TODO: Write a mapper that makes a proper link to get all of the users contributions
+    private String profilePictureLink;
+    private String contributionsLink;
 }
