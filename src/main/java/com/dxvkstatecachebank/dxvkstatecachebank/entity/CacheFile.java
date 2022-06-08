@@ -1,12 +1,19 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.sql.Blob;
 import java.time.LocalDateTime;
 
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class CacheFile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,5 +42,5 @@ public class CacheFile {
     private Game game;
 
     @Lob
-    private byte[] data;
+    private Blob data;
 }

@@ -1,12 +1,19 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.sql.Blob;
 import java.util.List;
 
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Table(name = "`user`")
 public class User {
     @Id
@@ -29,7 +36,7 @@ public class User {
     private String email;
 
     @Lob
-    private byte[] profilePicture;
+    private Blob profilePicture;
 
     @OneToMany(mappedBy = "uploader")
     private List<CacheFile> contributions;
