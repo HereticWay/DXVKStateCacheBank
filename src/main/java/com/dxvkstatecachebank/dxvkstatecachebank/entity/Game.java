@@ -30,9 +30,6 @@ public class Game {
     @OneToMany(mappedBy = "game")
     private List<CacheFile> contributions;
 
-    @Column(
-            nullable = false,
-            unique = true
-    )
+    @Column(unique = true)
     private Long steamId;
 }
