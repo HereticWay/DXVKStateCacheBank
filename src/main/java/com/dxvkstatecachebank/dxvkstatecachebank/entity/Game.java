@@ -24,6 +24,9 @@ public class Game {
     )
     private String name;
 
+    @Column(nullable = false)
+    private String cacheFileName;
+
     @OneToOne(mappedBy = "game")
     private IncrementalCacheFile latestCacheFile;
 

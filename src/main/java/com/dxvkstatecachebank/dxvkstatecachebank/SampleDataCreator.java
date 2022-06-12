@@ -72,6 +72,7 @@ public class SampleDataCreator {
                 Game.builder()
                 .id(1L)
                 .name("Apex Legends")
+                .cacheFileName("r5apex")
                 .steamId(1172470L)
                 .build()
         );
@@ -80,6 +81,7 @@ public class SampleDataCreator {
                 Game.builder()
                 .id(2L)
                 .name("Overwatch")
+                .cacheFileName("Overwatch")
                 .build()
         );
     }
@@ -102,7 +104,7 @@ public class SampleDataCreator {
                 .id(2L)
                 .game(Game.builder().id(2L).build())
                 .lastUpdateTime(LocalDateTime.now())
-                .data(BlobProxy.generateProxy(new byte[0]))
+                .data(BlobProxy.generateProxy(new byte[] {0x48, 0x12, 0x30}))
                 .build()
         );
     }
