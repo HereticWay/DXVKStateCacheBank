@@ -6,8 +6,14 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileUploadDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -29,6 +35,35 @@ public class CacheFileController {
     @GetMapping("/{cacheFileId}")
     public CacheFileInfoDto findCacheFileById(@PathVariable("cacheFileId") Long cacheFileId) {
         return cacheFileMapper.toDto(cacheFileService.findById(cacheFileId));
+    }
+
+    @Transactional
+    @GetMapping("/{cacheFileId}/data")
+    public ResponseEntity<StreamingResponseBody> getCacheFileData(@PathVariable("cacheFileId") Long cacheFileId, final HttpServletResponse response) {
+        CacheFile cacheFile = cacheFileService.findById(cacheFileId);
+        String cacheFileName = cacheFile.getGame()
+                .getCacheFileName();
+
+        response.setContentType("application/octet-stream");
+        response.setHeader(
+                "Content-Disposition",
+                "attachment;filename=%s.dxvk-cache".formatted(cacheFileName)
+        );
+
+        StreamingResponseBody streamingResponseBody = outputStream -> {
+            InputStream cacheFileBinaryStreamFromDb;
+            try {
+                cacheFileBinaryStreamFromDb = cacheFile.getData().getBinaryStream();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+            cacheFileBinaryStreamFromDb.transferTo(outputStream);
+            outputStream.close();
+            cacheFileBinaryStreamFromDb.close();
+        };
+
+        return ResponseEntity.ok(streamingResponseBody);
     }
 
     @PostMapping
