@@ -28,7 +28,9 @@ public class CacheFileMapper {
                 .build();
     }
 
-    public CacheFile toCacheFile(Long uploaderId, Long gameId, MultipartFile multipartFile) throws IOException {
+    public CacheFile toCacheFile(CacheFileUploadDto cacheFileUploadDto, MultipartFile multipartFile) throws IOException {
+        Long uploaderId = cacheFileUploadDto.getUploaderId();
+        Long gameId = cacheFileUploadDto.getGameId();
 
         return CacheFile.builder()
                 .uploader(User.builder().id(uploaderId).build())

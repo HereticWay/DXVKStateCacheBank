@@ -69,8 +69,8 @@ public class CacheFileController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CacheFileInfoDto uploadCacheFile(@RequestParam("uploaderId") Long uploaderId, @RequestParam("gameId") Long gameId, @RequestParam("file") MultipartFile multipartFile) throws IOException {
-        CacheFile cacheFileCreated = cacheFileService.save(cacheFileMapper.toCacheFile(uploaderId, gameId, multipartFile));
+    public CacheFileInfoDto uploadCacheFile(@JsonProperty @RequestPart("cacheFileUploadDto") CacheFileUploadDto cacheFileUploadDto, @RequestParam("file") MultipartFile multipartFile) throws IOException {
+        CacheFile cacheFileCreated = cacheFileService.save(cacheFileMapper.toCacheFile(cacheFileUploadDto, multipartFile));
         return cacheFileMapper.toDto(cacheFileCreated);
     }
 
