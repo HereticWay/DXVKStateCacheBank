@@ -8,11 +8,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class GameMapper {
     public GameInfoDto toDto(Game game) {
-        Long incrementalCacheFileId = game.getLatestCacheFile().getId();
         return GameInfoDto.builder()
                 .id(game.getId())
                 .name(game.getName())
-                .incrementalCacheFileLink("/cachefile/%d/data".formatted(incrementalCacheFileId))
+                .incrementalCacheFileLink("/game/%d/incremental_cache_file".formatted(game.getId()))
                 .contributionsLink("/cachefile/game/%d".formatted(game.getId()))
                 .steamId(game.getSteamId())
                 .build();
