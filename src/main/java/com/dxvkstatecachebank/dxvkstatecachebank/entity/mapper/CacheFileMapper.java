@@ -24,7 +24,7 @@ public class CacheFileMapper {
                 .uploadDateTime(cacheFile.getUploadDateTime())
                 .uploaderLink("/user/%d".formatted(uploaderId))
                 .gameLink("/game/%d".formatted(gameId))
-                .dataLink("/cachefile/%d/data")
+                .dataLink("/cachefile/%d/data".formatted(cacheFile.getId()))
                 .build();
     }
 
