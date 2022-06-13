@@ -27,8 +27,8 @@ public class Game {
     @Column(nullable = false)
     private String cacheFileName;
 
-    @OneToOne(mappedBy = "game")
-    private IncrementalCacheFile latestCacheFile;
+    @Lob
+    private byte[] incrementalCache;
 
     @OneToMany(mappedBy = "game")
     private List<CacheFile> contributions;
