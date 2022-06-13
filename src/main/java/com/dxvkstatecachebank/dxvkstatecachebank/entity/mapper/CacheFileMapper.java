@@ -7,6 +7,11 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileInfoDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileUploadDto;
 import org.hibernate.engine.jdbc.BlobProxy;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Component
 public class CacheFileMapper {
@@ -23,14 +28,13 @@ public class CacheFileMapper {
                 .build();
     }
 
-    public CacheFile toCacheFile(CacheFileUploadDto cacheFileUploadDto) {
-        Long uploaderId = cacheFileUploadDto.getUploaderId();
-        Long gameId = cacheFileUploadDto.getGameId();
+    public CacheFile toCacheFile(Long uploaderId, Long gameId, MultipartFile multipartFile) throws IOException {
 
         return CacheFile.builder()
                 .uploader(User.builder().id(uploaderId).build())
+                .uploadDateTime(LocalDateTime.now())
                 .game(Game.builder().id(gameId).build())
-                .data(BlobProxy.generateProxy(cacheFileUploadDto.getData()))
+                .data(BlobProxy.generateProxy(multipartFile.getInputStream(), multipartFile.getSize()))
                 .build();
     }
 }

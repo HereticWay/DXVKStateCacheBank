@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,5 +12,4 @@ import java.time.LocalDateTime;
 public class CacheFileUploadDto {
     private Long uploaderId;
     private Long gameId;
-    private byte[] data;
 }

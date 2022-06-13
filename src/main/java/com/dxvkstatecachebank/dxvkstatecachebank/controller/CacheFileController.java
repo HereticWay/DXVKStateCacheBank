@@ -2,11 +2,11 @@ package com.dxvkstatecachebank.dxvkstatecachebank.controller;
 
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.CacheFile;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.IncrementalCacheFile;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileInfoDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileUploadDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -15,7 +15,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
@@ -65,9 +68,9 @@ public class CacheFileController {
                 .body(inputStreamResource);
     }
 
-    @PostMapping
-    public CacheFileInfoDto uploadCacheFile(@RequestBody CacheFileUploadDto cacheFileUploadDto) {
-        CacheFile cacheFileCreated = cacheFileService.save(cacheFileMapper.toCacheFile(cacheFileUploadDto));
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public CacheFileInfoDto uploadCacheFile(@RequestParam("uploaderId") Long uploaderId, @RequestParam("gameId") Long gameId, @RequestParam("file") MultipartFile multipartFile) throws IOException {
+        CacheFile cacheFileCreated = cacheFileService.save(cacheFileMapper.toCacheFile(uploaderId, gameId, multipartFile));
         return cacheFileMapper.toDto(cacheFileCreated);
     }
 
