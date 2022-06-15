@@ -3,6 +3,7 @@ package com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.GameCreateDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.GameInfoDto;
+import org.hibernate.engine.jdbc.BlobProxy;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,6 +22,8 @@ public class GameMapper {
         return Game.builder()
                 .name(gameCreateDto.getName())
                 .steamId(gameCreateDto.getSteamId())
+                .cacheFileName(gameCreateDto.getCacheFileName())
+                .incrementalCache(null)
                 .build();
     }
 }

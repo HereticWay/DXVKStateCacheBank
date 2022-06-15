@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class GameCreateDto {
     private String name;
+    private String cacheFileName;
     private Long steamId;
 }
