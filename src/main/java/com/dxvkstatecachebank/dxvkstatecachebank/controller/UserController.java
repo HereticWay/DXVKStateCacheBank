@@ -53,7 +53,7 @@ public class UserController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public UserInfoDto createUser(@JsonProperty @RequestPart("userCreateDto") UserCreateDto userCreateDto, @RequestParam("file") MultipartFile multipartFile) throws IOException {
+    public UserInfoDto createUser(@RequestPart("userCreateDto") UserCreateDto userCreateDto, @RequestPart("file") MultipartFile multipartFile) throws IOException {
         User userCreated = userService.save(userMapper.toUser(userCreateDto, multipartFile));
         return userMapper.toDto(userCreated);
     }
