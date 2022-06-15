@@ -69,7 +69,7 @@ public class CacheFileController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CacheFileInfoDto uploadCacheFile(@JsonProperty @RequestPart("cacheFileUploadDto") CacheFileUploadDto cacheFileUploadDto, @RequestParam("file") MultipartFile multipartFile) throws IOException {
+    public CacheFileInfoDto uploadCacheFile(@RequestPart("cacheFileUploadDto") CacheFileUploadDto cacheFileUploadDto, @RequestPart("file") MultipartFile multipartFile) throws IOException {
         CacheFile cacheFileCreated = cacheFileService.save(cacheFileMapper.toCacheFile(cacheFileUploadDto, multipartFile));
         return cacheFileMapper.toDto(cacheFileCreated);
     }
