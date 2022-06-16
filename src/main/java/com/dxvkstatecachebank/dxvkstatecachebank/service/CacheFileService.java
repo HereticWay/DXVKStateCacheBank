@@ -1,12 +1,12 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.service;
 
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.CacheFile;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
 import com.dxvkstatecachebank.dxvkstatecachebank.repository.CacheFileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CacheFileService {
@@ -27,7 +27,7 @@ public class CacheFileService {
 
     public CacheFile findById(Long cacheFileId) {
         return cacheFileRepository.findById(cacheFileId)
-                .get();  // It's okay now to throw an exception here
+                .orElseThrow();  // It's okay now to throw an exception here
     }
 
     public void deleteById(Long cacheFileId) {

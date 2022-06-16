@@ -23,7 +23,7 @@ public class GameService {
 
     public Game findById(Long gameId) {
         return gameRepository.findById(gameId)
-                .get();  // It's okay now to throw an exception here
+                .orElseThrow();  // It's okay now to throw an exception here
     }
 
     public void deleteById(Long gameId) {

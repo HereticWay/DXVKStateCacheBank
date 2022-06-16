@@ -13,8 +13,6 @@ public class UserInfoDto {
     private Long id;
     private String name;
     private String email;
-    //private Blob profilePicture;
-    //private List<CacheFileView> contributions;
     private String profilePictureLink;
-    private String contributionsLink;
+    private String cacheFilesLink;
 }

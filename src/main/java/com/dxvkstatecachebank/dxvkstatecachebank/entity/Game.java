@@ -29,10 +29,10 @@ public class Game {
     private String cacheFileName;
 
     @Lob
-    private Blob incrementalCache;
+    private Blob incrementalCacheFile;
 
     @OneToMany(mappedBy = "game")
-    private List<CacheFile> contributions;
+    private List<CacheFile> cacheFiles;
 
     @Column(unique = true)
     private Long steamId;

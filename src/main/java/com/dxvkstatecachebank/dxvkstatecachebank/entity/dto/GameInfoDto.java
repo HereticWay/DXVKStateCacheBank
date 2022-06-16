@@ -12,9 +12,7 @@ import lombok.NoArgsConstructor;
 public class GameInfoDto {
     private Long id;
     private String name;
-    //private IncrementalCacheFileView incrementalCacheFile;
-    //private List<CacheFileView> contributions;
-    String incrementalCacheFileLink;
-    private String contributionsLink;
+    private String incrementalCacheFileLink;
+    private String cacheFilesLink;
     private Long steamId;
 }

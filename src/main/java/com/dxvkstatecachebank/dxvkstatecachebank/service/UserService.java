@@ -27,6 +27,6 @@ public class UserService {
 
     public User findById(Long userId) {
         return userRepository.findById(userId)
-                .get();  // It's okay now to throw an exception here
+                .orElseThrow();  // It's okay now to throw an exception here
     }
 }

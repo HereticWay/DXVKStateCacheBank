@@ -13,7 +13,7 @@ public class GameMapper {
                 .id(game.getId())
                 .name(game.getName())
                 .incrementalCacheFileLink("/game/%d/incremental_cache_file".formatted(game.getId()))
-                .contributionsLink("/cachefile/game/%d".formatted(game.getId()))
+                .cacheFilesLink("/game/%d/cache_files".formatted(game.getId()))
                 .steamId(game.getSteamId())
                 .build();
     }
@@ -23,7 +23,7 @@ public class GameMapper {
                 .name(gameCreateDto.getName())
                 .steamId(gameCreateDto.getSteamId())
                 .cacheFileName(gameCreateDto.getCacheFileName())
-                .incrementalCache(BlobProxy.generateProxy(new byte[0]))
+                .incrementalCacheFile(BlobProxy.generateProxy(new byte[0]))
                 .build();
     }
 }

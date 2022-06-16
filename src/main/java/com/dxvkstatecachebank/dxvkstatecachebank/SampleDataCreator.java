@@ -72,7 +72,7 @@ public class SampleDataCreator {
                     .id(1L)
                     .name("Apex Legends")
                     .cacheFileName("r5apex")
-                    .incrementalCache(BlobProxy.generateProxy(apexCacheFileInputStream, apexCacheFileResource.contentLength()))
+                    .incrementalCacheFile(BlobProxy.generateProxy(apexCacheFileInputStream, apexCacheFileResource.contentLength()))
                     .steamId(1172470L)
                     .build()
             );
@@ -83,7 +83,7 @@ public class SampleDataCreator {
                 .id(2L)
                 .name("Overwatch")
                 .cacheFileName("Overwatch")
-                .incrementalCache(BlobProxy.generateProxy(new byte[] {0x22, 0x49, 0x11, 0x05})) // just some random bytes
+                .incrementalCacheFile(BlobProxy.generateProxy(new byte[] {0x22, 0x49, 0x11, 0x05})) // just some random bytes
                 .steamId(null)
                 .build()
         );

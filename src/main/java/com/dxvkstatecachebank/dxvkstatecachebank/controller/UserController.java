@@ -1,9 +1,12 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.controller;
 
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.User;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileInfoDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserCreateDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserInfoDto;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.UserMapper;
+import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -23,6 +26,13 @@ import java.util.List;
 public class UserController {
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private CacheFileService cacheFileService;
+
+    @Autowired
+    private CacheFileMapper cacheFileMapper;
+
     @Autowired
     private UserMapper userMapper;
 
@@ -50,6 +60,13 @@ public class UserController {
                 .contentType(MediaType.IMAGE_PNG)
                 .contentLength(profilePictureBlob.length())
                 .body(inputStreamResource);
+    }
+
+    @GetMapping("/{userId}/cache_files")
+    public List<CacheFileInfoDto> findCacheFileByUserId(@PathVariable("userId") Long userId) {
+        return cacheFileService.findAllByUploaderId(userId).stream()
+                .map(cacheFileMapper::toDto)
+                .toList();
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -24,7 +24,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/cachefile")
+@RequestMapping("/cache_file")
 public class CacheFileController {
     @Autowired
     private CacheFileService cacheFileService;
@@ -32,23 +32,9 @@ public class CacheFileController {
     @Autowired
     private CacheFileMapper cacheFileMapper;
 
-    @GetMapping("/game/{gameId}")
-    public List<CacheFileInfoDto> listCacheFilesForGameId(@PathVariable("gameId") Long gameId) {
-        return cacheFileService.findAllByGameId(gameId).stream()
-                .map(cacheFile -> cacheFileMapper.toDto(cacheFile))
-                .toList();
-    }
-
     @GetMapping("/{cacheFileId}")
     public CacheFileInfoDto findCacheFileById(@PathVariable("cacheFileId") Long cacheFileId) {
         return cacheFileMapper.toDto(cacheFileService.findById(cacheFileId));
-    }
-
-    @GetMapping("/user/{userId}")
-    public List<CacheFileInfoDto> findCacheFileByUserId(@PathVariable("userId") Long userId) {
-        return cacheFileService.findAllByUploaderId(userId).stream()
-                .map(cacheFileMapper::toDto)
-                .toList();
     }
 
     @Transactional

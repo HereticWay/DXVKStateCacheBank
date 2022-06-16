@@ -9,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 @Component
 public class UserMapper {
@@ -19,7 +18,7 @@ public class UserMapper {
                 .name(user.getName())
                 .email(user.getEmail())
                 .profilePictureLink("/user/%d/profile_picture".formatted(user.getId()))
-                .contributionsLink("/cachefile/user/%d".formatted(user.getId()))
+                .cacheFilesLink("/user/%d/cachefiles".formatted(user.getId()))
                 .build();
     }
 
