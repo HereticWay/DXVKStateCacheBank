@@ -23,7 +23,7 @@ public class GameMapper {
                 .name(gameCreateDto.getName())
                 .steamId(gameCreateDto.getSteamId())
                 .cacheFileName(gameCreateDto.getCacheFileName())
-                .incrementalCache(null)
+                .incrementalCache(BlobProxy.generateProxy(new byte[0]))
                 .build();
     }
 }

@@ -7,6 +7,7 @@ import org.hibernate.engine.jdbc.BlobProxy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -23,12 +24,15 @@ public class UserMapper {
     }
 
     public User toUser(UserCreateDto userCreateDto, MultipartFile profilePicture) throws IOException {
-        InputStream profilePictureInputStream = profilePicture.getInputStream();
-        return User.builder()
-                .email(userCreateDto.getEmail())
-                .name(userCreateDto.getName())
-                .password(userCreateDto.getPassword())
-                .profilePicture(BlobProxy.generateProxy(profilePictureInputStream, profilePicture.getSize()))
-                .build();
+        try (
+                var profilePictureInputStream = new BufferedInputStream(profilePicture.getInputStream())
+       ) {
+            return User.builder()
+                    .email(userCreateDto.getEmail())
+                    .name(userCreateDto.getName())
+                    .password(userCreateDto.getPassword())
+                    .profilePicture(BlobProxy.generateProxy(profilePictureInputStream, profilePicture.getSize()))
+                    .build();
+        }
     }
 }
