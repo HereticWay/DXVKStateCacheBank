@@ -15,6 +15,8 @@ while the program runs.
 Binary uploads may not work through swagger's "try it out" feature for some reason.
 I recommend you use `curl` or Postman instead.
 
+## Passwords are now stored in plain text, but I plan to encrypt them and use http basic authentication too for simplicity. Requests aren't authenticated right now.
+
 # How to run the project
 On Linux:
 ```shell
@@ -27,4 +29,3 @@ On Windows (I did not test this):
 # mvnw.cmd clean package -DskipTests
 # java -jar target/DXVKStateCacheBank-0.0.1-SNAPSHOT.jar
 ```
-
