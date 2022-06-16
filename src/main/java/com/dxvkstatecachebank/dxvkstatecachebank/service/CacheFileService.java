@@ -17,6 +17,10 @@ public class CacheFileService {
         return cacheFileRepository.findAllByGameId(gameId);
     }
 
+    public List<CacheFile> findAllByUploaderId(Long uploaderId) {
+        return cacheFileRepository.findAllByUploaderId(uploaderId);
+    }
+
     public CacheFile save(CacheFile cacheFile) {
         return cacheFileRepository.save(cacheFile);
     }

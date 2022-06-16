@@ -44,6 +44,13 @@ public class CacheFileController {
         return cacheFileMapper.toDto(cacheFileService.findById(cacheFileId));
     }
 
+    @GetMapping("/user/{userId}")
+    public List<CacheFileInfoDto> findCacheFileByUserId(@PathVariable("userId") Long userId) {
+        return cacheFileService.findAllByUploaderId(userId).stream()
+                .map(cacheFileMapper::toDto)
+                .toList();
+    }
+
     @Transactional
     @GetMapping("/{cacheFileId}/data")
     public ResponseEntity<Resource> getCacheFileData(@PathVariable("cacheFileId") Long cacheFileId) throws SQLException {

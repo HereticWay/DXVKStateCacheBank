@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface CacheFileRepository extends JpaRepository<CacheFile, Long> {
     List<CacheFile> findAllByGameId(Long gameId);
+    List<CacheFile> findAllByUploaderId(Long uploaderId);
 }
