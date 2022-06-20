@@ -15,17 +15,25 @@ while the program runs.
 Binary uploads may not work through swagger's "try it out" feature for some reason.
 I recommend you use `curl` or Postman instead.
 
-## Passwords are now stored in plain text, but I plan to encrypt them and use http basic authentication too for simplicity. Requests aren't authenticated right now.
+## Passwords are now stored in plain text,but I plan to encrypt them and use http basic authentication too for simplicity. Requests aren't authenticated right now.
 
 # How to run the project
-On Linux:
+### To run in Docker:
 ```shell
-# ./mvnw clean package -DskipTests
-# java -jar target/DXVKStateCacheBank-0.0.1-SNAPSHOT.jar
+# Navigate to the project's directory and then run the following command
+$ docker compose up
 ```
 
-On Windows (I did not test this):
+### To run on Linux:
+**OpenJDK 18** must be installed and you should have
+[**dxvk-cache-tool**](https://github.com/DarkTigrus/dxvk-cache-tool/releases) on your PATH before
+trying to run the program on your system!
 ```shell
-# mvnw.cmd clean package -DskipTests
-# java -jar target/DXVKStateCacheBank-0.0.1-SNAPSHOT.jar
+# Navigate to the project's directory and then run the following commands
+$ ./mvnw clean package -DskipTests
+$ java -jar target/DXVKStateCacheBank-0.0.1-SNAPSHOT.jar
 ```
+
+### To run on Windows:
+Running on Windows is currently only supported through **WSL** and **Docker** because dxvk-cache-tool
+does not have a native Windows build.

@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 
 @Component
@@ -34,20 +35,16 @@ public class CacheFileMapper {
                 .build();
     }
 
-    public CacheFile toCacheFile(CacheFileUploadDto cacheFileUploadDto, MultipartFile multipartFile) throws IOException {
+    public CacheFile toCacheFile(CacheFileUploadDto cacheFileUploadDto, InputStream cacheFileInputStream, Long cacheFileSize) {
         Long uploaderId = cacheFileUploadDto.getUploaderId();
         Long gameId = cacheFileUploadDto.getGameId();
         Game game = gameService.findById(gameId);
 
-        try (
-                var cacheFileInputStream = new BufferedInputStream(multipartFile.getInputStream())
-        ) {
-            return CacheFile.builder()
-                    .uploader(User.builder().id(uploaderId).build())
-                    .uploadDateTime(LocalDateTime.now())
-                    .game(game)
-                    .data(BlobProxy.generateProxy(cacheFileInputStream, multipartFile.getSize()))
-                    .build();
-        }
+        return CacheFile.builder()
+                .uploader(User.builder().id(uploaderId).build())
+                .uploadDateTime(LocalDateTime.now())
+                .game(game)
+                .data(BlobProxy.generateProxy(cacheFileInputStream, cacheFileSize))
+                .build();
     }
 }

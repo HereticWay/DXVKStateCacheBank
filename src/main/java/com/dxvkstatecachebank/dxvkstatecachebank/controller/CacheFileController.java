@@ -5,8 +5,10 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileInfoDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileUploadDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
+import com.dxvkstatecachebank.dxvkstatecachebank.exceptions.NoNewCacheEntryException;
+import com.dxvkstatecachebank.dxvkstatecachebank.exceptions.UnsuccessfulCacheMergeException;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -18,13 +20,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/cache_file")
+@Slf4j
 public class CacheFileController {
     @Autowired
     private CacheFileService cacheFileService;
@@ -40,7 +46,14 @@ public class CacheFileController {
     @Transactional
     @GetMapping("/{cacheFileId}/data")
     public ResponseEntity<Resource> getCacheFileData(@PathVariable("cacheFileId") Long cacheFileId) throws SQLException {
-        CacheFile cacheFile = cacheFileService.findById(cacheFileId);
+        CacheFile cacheFile;
+        try {
+            cacheFile = cacheFileService.findById(cacheFileId);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound()
+                    .build();
+        }
+
         Blob cacheFileBlob = cacheFile.getData();
         Game game = cacheFile.getGame();
         String cacheFileName = "%s.dxvk-cache".formatted(game.getCacheFileName());
@@ -62,9 +75,21 @@ public class CacheFileController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CacheFileInfoDto uploadCacheFile(@RequestPart("cacheFileUploadDto") CacheFileUploadDto cacheFileUploadDto, @RequestPart("file") MultipartFile multipartFile) throws IOException {
-        CacheFile cacheFileCreated = cacheFileService.save(cacheFileMapper.toCacheFile(cacheFileUploadDto, multipartFile));
-        return cacheFileMapper.toDto(cacheFileCreated);
+    public ResponseEntity<CacheFileInfoDto> uploadCacheFile(@RequestPart("cacheFileUploadDto") CacheFileUploadDto cacheFileUploadDto, @RequestPart("file") MultipartFile multipartFile) {
+        try {
+            InputStream fileInputStream = multipartFile.getInputStream();
+            CacheFile savedCacheFile = cacheFileService.mergeCacheFileToIncrementalCacheAndSave(cacheFileUploadDto, fileInputStream, multipartFile.getSize());
+
+            CacheFileInfoDto cacheFileInfoDto = cacheFileMapper.toDto(savedCacheFile);
+            return ResponseEntity.ok(cacheFileInfoDto);
+        } catch (UnsuccessfulCacheMergeException | NoNewCacheEntryException e) {
+            return ResponseEntity.unprocessableEntity()
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+                    .build();
+        }
     }
 
     @DeleteMapping("/{cacheFileId}")

@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.dxvkstatecachebank</groupId>
     <artifactId>DXVKStateCacheBank</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.2.0-alpha</version>
     <name>DXVKStateCacheBank</name>
     <description>DXVKStateCacheBank</description>
     <properties>
