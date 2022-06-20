@@ -35,7 +35,7 @@ public class DxvkCacheToolRunner {
     }
 
     private boolean isDxvkCacheToolsExecutableExistsOnPath() throws InterruptedException, IOException {
-        Process testProcess = new ProcessBuilder("sh", "-c", "%s -h".formatted(DXVK_CACHE_TOOL_NAME)).start();
+        Process testProcess = new ProcessBuilder(DXVK_CACHE_TOOL_NAME, "-h").start();
         return testProcess.waitFor() == 0;
     }
 
