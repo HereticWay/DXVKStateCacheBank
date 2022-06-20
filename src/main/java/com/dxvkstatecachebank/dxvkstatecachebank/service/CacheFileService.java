@@ -13,6 +13,7 @@ import org.hibernate.engine.jdbc.BlobProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -104,6 +105,7 @@ public class CacheFileService {
         }
     }
 
+    @Transactional
     public CacheFile mergeCacheFileToIncrementalCacheAndSave(CacheFileUploadDto cacheFileUploadDto, InputStream mergeableCacheFileInputStream, Long mergeableCacheFileSize) throws IOException, SQLException, UnsuccessfulCacheMergeException, NoNewCacheEntryException {
         Game game = gameService.findById(cacheFileUploadDto.getGameId());
         // If we don't have incremental cache yet, then merging is not required
