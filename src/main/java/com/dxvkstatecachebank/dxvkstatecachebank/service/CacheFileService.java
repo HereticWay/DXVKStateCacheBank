@@ -109,7 +109,7 @@ public class CacheFileService {
                 .orElseThrow();
 
         // If we don't have incremental cache yet, then merging is not required
-        if (game.getIncrementalCacheFile() == null) {
+        if (game.getIncrementalCacheFile() == null || mergeableCacheFileSize == 0) {
             //TODO: optimize this to not use temp file to be able to read twice the same input
             //      (the problem is that you can't read twice from an input stream because you drain it but you can
             //       create two input streams for a temporary file, that's a workaround I used here for now)
