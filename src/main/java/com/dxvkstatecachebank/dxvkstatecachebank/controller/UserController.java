@@ -85,7 +85,7 @@ public class UserController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserInfoDto> createUser(@Valid @RequestPart("userCreateDto") UserCreateDto userCreateDto, @RequestPart("file") MultipartFile multipartFile, BindingResult bindingResult) throws IOException {
+    public ResponseEntity<UserInfoDto> createUser(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("userCreateDto") UserCreateDto userCreateDto, BindingResult bindingResult) throws IOException {
         if(bindingResult.hasErrors()) {
             log.error(bindingResult.getAllErrors().toString());
             return ResponseEntity.unprocessableEntity().build();

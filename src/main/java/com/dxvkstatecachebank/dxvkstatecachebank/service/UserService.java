@@ -28,4 +28,8 @@ public class UserService {
     public Optional<User> findById(Long userId) {
         return userRepository.findById(userId);
     }
+
+    public boolean existsById(Long userId) {
+        return userRepository.existsById(userId);
+    }
 }

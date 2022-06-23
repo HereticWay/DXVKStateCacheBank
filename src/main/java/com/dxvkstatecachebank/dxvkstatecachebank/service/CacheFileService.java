@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -53,9 +54,8 @@ public class CacheFileService {
         return cacheFileRepository.save(cacheFile);
     }
 
-    public CacheFile findById(Long cacheFileId) {
-        return cacheFileRepository.findById(cacheFileId)
-                .orElseThrow();  // It's okay now to throw an exception here
+    public Optional<CacheFile> findById(Long cacheFileId) {
+        return cacheFileRepository.findById(cacheFileId);
     }
 
     public void deleteById(Long cacheFileId) {
@@ -82,9 +82,7 @@ public class CacheFileService {
     }
 
     private void writeBlobToFile(Blob blob, Path filePath) throws IOException, SQLException {
-        try (
-                var blobInputStream = new BufferedInputStream(blob.getBinaryStream())
-        ) {
+        try (var blobInputStream = new BufferedInputStream(blob.getBinaryStream())) {
             writeStreamToFile(blobInputStream, filePath);
         }
     }
@@ -107,7 +105,9 @@ public class CacheFileService {
 
     @Transactional
     public CacheFile mergeCacheFileToIncrementalCacheAndSave(CacheFileUploadDto cacheFileUploadDto, InputStream mergeableCacheFileInputStream, Long mergeableCacheFileSize) throws IOException, SQLException, UnsuccessfulCacheMergeException, NoNewCacheEntryException {
-        Game game = gameService.findById(cacheFileUploadDto.getGameId());
+        Game game = gameService.findById(cacheFileUploadDto.getGameId())
+                .orElseThrow();
+
         // If we don't have incremental cache yet, then merging is not required
         if(game.getIncrementalCacheFile() == null) {
             //TODO: optimize this to not use temp file to be able to read twice the same input
@@ -119,8 +119,10 @@ public class CacheFileService {
 
                 CacheFile cacheFile = cacheFileMapper.toCacheFile(cacheFileUploadDto, readFileToInputStream(tempFilePath), mergeableCacheFileSize);
                 cacheFile = cacheFileRepository.save(cacheFile);
+                Blob cacheFileData = findById(cacheFile.getId())
+                        .orElseThrow()
+                        .getData();
 
-                Blob cacheFileData = findById(cacheFile.getId()).getData();
                 game.setIncrementalCacheFile(BlobProxy.generateProxy(readFileToInputStream(tempFilePath), cacheFileData.length()));
                 gameService.save(game);
 
@@ -167,5 +169,9 @@ public class CacheFileService {
             deleteTemporaryFile(mergeableCacheFilePath);
             deleteTemporaryFile(outputCacheFilePath);
         }
+    }
+
+    public boolean existsById(Long cacheFileId) {
+        return cacheFileRepository.existsById(cacheFileId);
     }
 }

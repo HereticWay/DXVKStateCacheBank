@@ -25,6 +25,10 @@ public class GameService {
         return gameRepository.findById(gameId);
     }
 
+    public boolean existsById(Long gameId) {
+        return gameRepository.existsById(gameId);
+    }
+
     public void deleteById(Long gameId) {
         gameRepository.deleteById(gameId);
     }

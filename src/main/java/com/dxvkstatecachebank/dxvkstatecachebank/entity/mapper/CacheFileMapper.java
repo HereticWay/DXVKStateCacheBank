@@ -5,15 +5,11 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.User;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileInfoDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileUploadDto;
-import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
 import org.hibernate.engine.jdbc.BlobProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 
@@ -38,7 +34,8 @@ public class CacheFileMapper {
     public CacheFile toCacheFile(CacheFileUploadDto cacheFileUploadDto, InputStream cacheFileInputStream, Long cacheFileSize) {
         Long uploaderId = cacheFileUploadDto.getUploaderId();
         Long gameId = cacheFileUploadDto.getGameId();
-        Game game = gameService.findById(gameId);
+        Game game = gameService.findById(gameId)
+                .orElseThrow();
 
         return CacheFile.builder()
                 .uploader(User.builder().id(uploaderId).build())
