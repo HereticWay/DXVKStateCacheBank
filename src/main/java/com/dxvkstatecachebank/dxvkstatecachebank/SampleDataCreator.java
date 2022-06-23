@@ -66,6 +66,8 @@ public class SampleDataCreator {
                         .profilePicture(BlobProxy.generateProxy(example_image))
                         .build()
         );
+
+        userService.flush();
     }
 
     public void insertGames() throws IOException {
@@ -91,6 +93,8 @@ public class SampleDataCreator {
                         .steamId(null)
                         .build()
         );
+
+        gameService.flush();
     }
 
     @Transactional
@@ -104,5 +108,6 @@ public class SampleDataCreator {
                         .build();
 
         cacheFileService.mergeCacheFileToIncrementalCacheAndSave(cacheFileUploadDto, apexCacheFileInputStream, apexCacheFileResource.contentLength());
+        cacheFileService.flush();
     }
 }
