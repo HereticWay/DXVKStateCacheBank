@@ -65,7 +65,7 @@ public class GameController {
 
         Game game = gameFound.get();
         Blob cacheFileBlob = game.getIncrementalCacheFile();
-        if (cacheFileBlob == null) {
+        if (cacheFileBlob == null || cacheFileBlob.length() == 0) {
             return ResponseEntity.notFound().build();
         }
 
