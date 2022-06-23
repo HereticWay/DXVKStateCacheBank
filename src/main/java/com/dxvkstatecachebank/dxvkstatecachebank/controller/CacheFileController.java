@@ -16,17 +16,16 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
-import java.io.BufferedInputStream;
-import java.io.IOException;
+import javax.validation.Valid;
 import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
-import java.util.NoSuchElementException;
-import java.util.concurrent.ExecutionException;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/cache_file")
@@ -39,21 +38,25 @@ public class CacheFileController {
     private CacheFileMapper cacheFileMapper;
 
     @GetMapping("/{cacheFileId}")
-    public CacheFileInfoDto findCacheFileById(@PathVariable("cacheFileId") Long cacheFileId) {
-        return cacheFileMapper.toDto(cacheFileService.findById(cacheFileId));
+    public ResponseEntity<CacheFileInfoDto> findCacheFileById(@PathVariable("cacheFileId") Long cacheFileId) {
+        Optional<CacheFile> cacheFileFound = cacheFileService.findById(cacheFileId);
+        if (cacheFileFound.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        CacheFile cacheFile = cacheFileFound.get();
+        return ResponseEntity.ok(cacheFileMapper.toDto(cacheFile));
     }
 
     @Transactional
     @GetMapping("/{cacheFileId}/data")
     public ResponseEntity<Resource> getCacheFileData(@PathVariable("cacheFileId") Long cacheFileId) throws SQLException {
-        CacheFile cacheFile;
-        try {
-            cacheFile = cacheFileService.findById(cacheFileId);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.notFound()
-                    .build();
+        Optional<CacheFile> cacheFileFound = cacheFileService.findById(cacheFileId);
+        if (cacheFileFound.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
 
+        CacheFile cacheFile = cacheFileFound.get();
         Blob cacheFileBlob = cacheFile.getData();
         Game game = cacheFile.getGame();
         String cacheFileName = "%s.dxvk-cache".formatted(game.getCacheFileName());
@@ -75,7 +78,14 @@ public class CacheFileController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CacheFileInfoDto> uploadCacheFile(@RequestPart("cacheFileUploadDto") CacheFileUploadDto cacheFileUploadDto, @RequestPart("file") MultipartFile multipartFile) {
+    public ResponseEntity<CacheFileInfoDto> uploadCacheFile(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("cacheFileUploadDto") CacheFileUploadDto cacheFileUploadDto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            log.error(bindingResult.getAllErrors().toString());
+            // TODO: Return more descriptive error messages here
+            return ResponseEntity.unprocessableEntity()
+                    .build();
+        }
+
         try {
             InputStream fileInputStream = multipartFile.getInputStream();
             CacheFile savedCacheFile = cacheFileService.mergeCacheFileToIncrementalCacheAndSave(cacheFileUploadDto, fileInputStream, multipartFile.getSize());
@@ -83,6 +93,7 @@ public class CacheFileController {
             CacheFileInfoDto cacheFileInfoDto = cacheFileMapper.toDto(savedCacheFile);
             return ResponseEntity.ok(cacheFileInfoDto);
         } catch (UnsuccessfulCacheMergeException | NoNewCacheEntryException e) {
+            // TODO: Return more descriptive error messages here
             return ResponseEntity.unprocessableEntity()
                     .build();
         } catch (Exception e) {

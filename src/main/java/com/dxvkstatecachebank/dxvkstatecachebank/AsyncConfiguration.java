@@ -42,7 +42,9 @@ public class AsyncConfiguration implements AsyncConfigurer {
         return new SimpleAsyncUncaughtExceptionHandler();
     }
 
-    /** Configure async support for Spring MVC. */
+    /**
+     * Configure async support for Spring MVC.
+     */
     @Bean
     public WebMvcConfigurer webMvcConfigurerConfigurer(AsyncTaskExecutor taskExecutor, CallableProcessingInterceptor callableProcessingInterceptor) {
         log.debug("webMvcConfigurerConfigurer");

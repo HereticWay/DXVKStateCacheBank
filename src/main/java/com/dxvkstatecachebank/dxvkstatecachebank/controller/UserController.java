@@ -8,21 +8,26 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.UserMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
+@Slf4j
 public class UserController {
     @Autowired
     private UserService userService;
@@ -44,15 +49,27 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public UserInfoDto findUserById(@PathVariable("userId") Long userId) {
-        User userFound = userService.findById(userId);
-        return userMapper.toDto(userFound);
+    public ResponseEntity<UserInfoDto> findUserById(@PathVariable("userId") Long userId) {
+        Optional<User> userFound = userService.findById(userId);
+        if (userFound.isEmpty()) {
+            return ResponseEntity.notFound()
+                    .build();
+        }
+
+        User user = userFound.get();
+        return ResponseEntity.ok(userMapper.toDto(user));
     }
 
     @GetMapping("/{userId}/profile_picture")
     public ResponseEntity<Resource> getProfilePictureByUserId(@PathVariable("userId") Long userId) throws SQLException {
-        User userFound = userService.findById(userId);
-        Blob profilePictureBlob = userFound.getProfilePicture();
+        Optional<User> userFound = userService.findById(userId);
+        if (userFound.isEmpty()) {
+            return ResponseEntity.notFound()
+                    .build();
+        }
+
+        User user = userFound.get();
+        Blob profilePictureBlob = user.getProfilePicture();
 
         InputStreamResource inputStreamResource = new InputStreamResource(profilePictureBlob.getBinaryStream());
 
@@ -70,9 +87,15 @@ public class UserController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public UserInfoDto createUser(@RequestPart("userCreateDto") UserCreateDto userCreateDto, @RequestPart("file") MultipartFile multipartFile) throws IOException {
+    public ResponseEntity<UserInfoDto> createUser(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("userCreateDto") UserCreateDto userCreateDto, BindingResult bindingResult) throws IOException {
+        if (bindingResult.hasErrors()) {
+            log.error(bindingResult.getAllErrors().toString());
+            // TODO: Return more descriptive error messages here
+            return ResponseEntity.unprocessableEntity().build();
+        }
+
         User userCreated = userService.save(userMapper.toUser(userCreateDto, multipartFile));
-        return userMapper.toDto(userCreated);
+        return ResponseEntity.ok(userMapper.toDto(userCreated));
     }
 
     @DeleteMapping("/{userId}")

@@ -1,13 +1,13 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.service;
 
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.CacheFile;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileUploadDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.exceptions.NoNewCacheEntryException;
 import com.dxvkstatecachebank.dxvkstatecachebank.exceptions.UnsuccessfulCacheMergeException;
-import com.dxvkstatecachebank.dxvkstatecachebank.service.dto.MergeResultDto;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.CacheFile;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
 import com.dxvkstatecachebank.dxvkstatecachebank.repository.CacheFileRepository;
+import com.dxvkstatecachebank.dxvkstatecachebank.service.dto.MergeResultDto;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.engine.jdbc.BlobProxy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -53,9 +54,8 @@ public class CacheFileService {
         return cacheFileRepository.save(cacheFile);
     }
 
-    public CacheFile findById(Long cacheFileId) {
-        return cacheFileRepository.findById(cacheFileId)
-                .orElseThrow();  // It's okay now to throw an exception here
+    public Optional<CacheFile> findById(Long cacheFileId) {
+        return cacheFileRepository.findById(cacheFileId);
     }
 
     public void deleteById(Long cacheFileId) {
@@ -73,7 +73,7 @@ public class CacheFileService {
     }
 
     private void writeStreamToFile(InputStream inputStream, Path filePath) throws IOException {
-        try(
+        try (
                 var outputStream = new BufferedOutputStream(Files.newOutputStream(filePath));
                 inputStream
         ) {
@@ -82,9 +82,7 @@ public class CacheFileService {
     }
 
     private void writeBlobToFile(Blob blob, Path filePath) throws IOException, SQLException {
-        try (
-                var blobInputStream = new BufferedInputStream(blob.getBinaryStream())
-        ) {
+        try (var blobInputStream = new BufferedInputStream(blob.getBinaryStream())) {
             writeStreamToFile(blobInputStream, filePath);
         }
     }
@@ -100,16 +98,18 @@ public class CacheFileService {
     }
 
     private void deleteTemporaryFile(Path temporaryFilePath) {
-        if(!temporaryFilePath.toFile().delete()) {
+        if (!temporaryFilePath.toFile().delete()) {
             log.error("Temporary file {} couldn't be deleted!", temporaryFilePath);
         }
     }
 
     @Transactional
     public CacheFile mergeCacheFileToIncrementalCacheAndSave(CacheFileUploadDto cacheFileUploadDto, InputStream mergeableCacheFileInputStream, Long mergeableCacheFileSize) throws IOException, SQLException, UnsuccessfulCacheMergeException, NoNewCacheEntryException {
-        Game game = gameService.findById(cacheFileUploadDto.getGameId());
+        Game game = gameService.findById(cacheFileUploadDto.getGameId())
+                .orElseThrow();
+
         // If we don't have incremental cache yet, then merging is not required
-        if(game.getIncrementalCacheFile() == null) {
+        if (game.getIncrementalCacheFile() == null || mergeableCacheFileSize == 0) {
             //TODO: optimize this to not use temp file to be able to read twice the same input
             //      (the problem is that you can't read twice from an input stream because you drain it but you can
             //       create two input streams for a temporary file, that's a workaround I used here for now)
@@ -119,8 +119,10 @@ public class CacheFileService {
 
                 CacheFile cacheFile = cacheFileMapper.toCacheFile(cacheFileUploadDto, readFileToInputStream(tempFilePath), mergeableCacheFileSize);
                 cacheFile = cacheFileRepository.save(cacheFile);
+                Blob cacheFileData = findById(cacheFile.getId())
+                        .orElseThrow()
+                        .getData();
 
-                Blob cacheFileData = findById(cacheFile.getId()).getData();
                 game.setIncrementalCacheFile(BlobProxy.generateProxy(readFileToInputStream(tempFilePath), cacheFileData.length()));
                 gameService.save(game);
 
@@ -142,11 +144,11 @@ public class CacheFileService {
         try {
             MergeResultDto mergeResult = dxvkCacheToolRunner.run(incrementalCacheFilePath, mergeableCacheFilePath, outputCacheFilePath);
 
-            if(!mergeResult.isSuccess()) {
+            if (!mergeResult.isSuccess()) {
                 throw new UnsuccessfulCacheMergeException();
             }
 
-            if(mergeResult.getSumOfEntriesMerged() <= 0) {
+            if (mergeResult.getSumOfEntriesMerged() <= 0) {
                 throw new NoNewCacheEntryException();
             }
 
@@ -167,5 +169,21 @@ public class CacheFileService {
             deleteTemporaryFile(mergeableCacheFilePath);
             deleteTemporaryFile(outputCacheFilePath);
         }
+    }
+
+    public boolean existsById(Long cacheFileId) {
+        return cacheFileRepository.existsById(cacheFileId);
+    }
+
+    public void flush() {
+        cacheFileRepository.flush();
+    }
+
+    public void disownAllFromUploaderId(Long uploaderId) {
+        cacheFileRepository.disownAllFromUploaderId(uploaderId);
+    }
+
+    public void deleteAllByGameId(Long gameId) {
+        cacheFileRepository.deleteAllByGameId(gameId);
     }
 }

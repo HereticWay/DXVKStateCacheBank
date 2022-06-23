@@ -18,20 +18,18 @@ public class UserMapper {
                 .name(user.getName())
                 .email(user.getEmail())
                 .profilePictureLink("/user/%d/profile_picture".formatted(user.getId()))
-                .cacheFilesLink("/user/%d/cachefiles".formatted(user.getId()))
+                .cacheFilesLink("/user/%d/cache_files".formatted(user.getId()))
                 .build();
     }
 
     public User toUser(UserCreateDto userCreateDto, MultipartFile profilePicture) throws IOException {
-        try (
-                var profilePictureInputStream = new BufferedInputStream(profilePicture.getInputStream())
-       ) {
-            return User.builder()
-                    .email(userCreateDto.getEmail())
-                    .name(userCreateDto.getName())
-                    .password(userCreateDto.getPassword())
-                    .profilePicture(BlobProxy.generateProxy(profilePictureInputStream, profilePicture.getSize()))
-                    .build();
-        }
+        var profilePictureInputStream = new BufferedInputStream(profilePicture.getInputStream());
+
+        return User.builder()
+                .email(userCreateDto.getEmail())
+                .name(userCreateDto.getName())
+                .password(userCreateDto.getPassword())
+                .profilePicture(BlobProxy.generateProxy(profilePictureInputStream, profilePicture.getSize()))
+                .build();
     }
 }

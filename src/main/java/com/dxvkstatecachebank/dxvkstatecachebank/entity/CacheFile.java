@@ -28,15 +28,15 @@ public class CacheFile {
     @ManyToOne
     @JoinColumn(
             foreignKey =
-                @ForeignKey(name = "uploader_id"),
-            nullable = false
+            @ForeignKey(name = "uploader_id"),
+            nullable = true
     )
     private User uploader;
 
     @ManyToOne
     @JoinColumn(
             foreignKey =
-                @ForeignKey(name = "game_id"),
+            @ForeignKey(name = "game_id"),
             nullable = false
     )
     private Game game;
