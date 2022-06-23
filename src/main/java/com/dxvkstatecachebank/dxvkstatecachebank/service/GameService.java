@@ -3,6 +3,7 @@ package com.dxvkstatecachebank.dxvkstatecachebank.service;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
 import com.dxvkstatecachebank.dxvkstatecachebank.repository.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,6 +13,10 @@ import java.util.Optional;
 public class GameService {
     @Autowired
     private GameRepository gameRepository;
+
+    @Autowired
+    @Lazy
+    private CacheFileService cacheFileService;
 
     public List<Game> findAll() {
         return gameRepository.findAll();
@@ -30,6 +35,7 @@ public class GameService {
     }
 
     public void deleteById(Long gameId) {
+        cacheFileService.deleteAllByGameId(gameId);
         gameRepository.deleteById(gameId);
     }
 

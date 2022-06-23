@@ -24,4 +24,7 @@ public interface CacheFileRepository extends JpaRepository<CacheFile, Long> {
             WHERE uploader.id = :uploaderId
             """)
     void disownAllFromUploaderId(@Param("uploaderId") Long uploaderId);
+
+    @Transactional
+    void deleteAllByGameId(Long gameId);
 }

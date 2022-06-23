@@ -182,4 +182,8 @@ public class CacheFileService {
     public void disownAllFromUploaderId(Long uploaderId) {
         cacheFileRepository.disownAllFromUploaderId(uploaderId);
     }
+
+    public void deleteAllByGameId(Long gameId) {
+        cacheFileRepository.deleteAllByGameId(gameId);
+    }
 }

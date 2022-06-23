@@ -20,10 +20,9 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void deleteById(Long id) {
-        User user = findById(id).orElseThrow();
-        cacheFileService.disownAllFromUploaderId(user.getId());
-        userRepository.deleteById(id);
+    public void deleteById(Long userId) {
+        cacheFileService.disownAllFromUploaderId(userId);
+        userRepository.deleteById(userId);
     }
 
     public List<User> findAll() {
