@@ -29,7 +29,7 @@ public class CacheFile {
     @JoinColumn(
             foreignKey =
             @ForeignKey(name = "uploader_id"),
-            nullable = false
+            nullable = true
     )
     private User uploader;
 

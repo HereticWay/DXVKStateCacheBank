@@ -13,11 +13,16 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private CacheFileService cacheFileService;
+
     public User save(User user) {
         return userRepository.save(user);
     }
 
     public void deleteById(Long id) {
+        User user = findById(id).orElseThrow();
+        cacheFileService.disownAllFromUploaderId(user.getId());
         userRepository.deleteById(id);
     }
 
