@@ -51,8 +51,9 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<UserInfoDto> findUserById(@PathVariable("userId") Long userId) {
         Optional<User> userFound = userService.findById(userId);
-        if(userFound.isEmpty()) {
-            return ResponseEntity.notFound().build();
+        if (userFound.isEmpty()) {
+            return ResponseEntity.notFound()
+                    .build();
         }
 
         User user = userFound.get();
@@ -62,8 +63,9 @@ public class UserController {
     @GetMapping("/{userId}/profile_picture")
     public ResponseEntity<Resource> getProfilePictureByUserId(@PathVariable("userId") Long userId) throws SQLException {
         Optional<User> userFound = userService.findById(userId);
-        if(userFound.isEmpty()) {
-            return ResponseEntity.notFound().build();
+        if (userFound.isEmpty()) {
+            return ResponseEntity.notFound()
+                    .build();
         }
 
         User user = userFound.get();
@@ -86,8 +88,9 @@ public class UserController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserInfoDto> createUser(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("userCreateDto") UserCreateDto userCreateDto, BindingResult bindingResult) throws IOException {
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             log.error(bindingResult.getAllErrors().toString());
+            // TODO: Return more descriptive error messages here
             return ResponseEntity.unprocessableEntity().build();
         }
 

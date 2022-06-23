@@ -13,9 +13,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.HexFormat;
 
 @Component
@@ -39,32 +39,32 @@ public class SampleDataCreator {
     public void insertUsers() {
         userRepository.save(
                 User.builder()
-                .id(1L)
-                .email("abcd@gmail.com")
-                .name("Spider Murphy")
-                .password("password")
-                .profilePicture(BlobProxy.generateProxy(example_image))
-                .build()
+                        .id(1L)
+                        .email("abcd@gmail.com")
+                        .name("Spider Murphy")
+                        .password("password")
+                        .profilePicture(BlobProxy.generateProxy(example_image))
+                        .build()
         );
 
         userRepository.save(
                 User.builder()
-                .id(2L)
-                .email("defd@example.com")
-                .name("Eddie Murphy")
-                .password("password1234")
-                .profilePicture(BlobProxy.generateProxy(example_image))
-                .build()
+                        .id(2L)
+                        .email("defd@example.com")
+                        .name("Eddie Murphy")
+                        .password("password1234")
+                        .profilePicture(BlobProxy.generateProxy(example_image))
+                        .build()
         );
 
         userRepository.save(
                 User.builder()
-                .id(3L)
-                .email("deaaafd@yahoo.com")
-                .name("Katie Jackson")
-                .password("12345pass")
-                .profilePicture(BlobProxy.generateProxy(example_image))
-                .build()
+                        .id(3L)
+                        .email("deaaafd@yahoo.com")
+                        .name("Katie Jackson")
+                        .password("12345pass")
+                        .profilePicture(BlobProxy.generateProxy(example_image))
+                        .build()
         );
     }
 
@@ -73,23 +73,23 @@ public class SampleDataCreator {
         try (var apexCacheFileInputStream = new BufferedInputStream(apexCacheFileResource.getInputStream())) {
             gameRepository.save(
                     Game.builder()
-                    .id(1L)
-                    .name("Apex Legends")
-                    .cacheFileName("r5apex")
-                    .incrementalCacheFile(BlobProxy.generateProxy(apexCacheFileInputStream, apexCacheFileResource.contentLength()))
-                    .steamId(1172470L)
-                    .build()
+                            .id(1L)
+                            .name("Apex Legends")
+                            .cacheFileName("r5apex")
+                            .incrementalCacheFile(BlobProxy.generateProxy(apexCacheFileInputStream, apexCacheFileResource.contentLength()))
+                            .steamId(1172470L)
+                            .build()
             );
         }
 
         gameRepository.save(
                 Game.builder()
-                .id(2L)
-                .name("Overwatch")
-                .cacheFileName("Overwatch")
-                .incrementalCacheFile(null)
-                .steamId(null)
-                .build()
+                        .id(2L)
+                        .name("Overwatch")
+                        .cacheFileName("Overwatch")
+                        .incrementalCacheFile(null)
+                        .steamId(null)
+                        .build()
         );
     }
 
@@ -99,9 +99,9 @@ public class SampleDataCreator {
         var apexCacheFileInputStream = new BufferedInputStream(apexCacheFileResource.getInputStream());
         CacheFileUploadDto cacheFileUploadDto =
                 CacheFileUploadDto.builder()
-                .uploaderId(2L)
-                .gameId(1L)
-                .build();
+                        .uploaderId(2L)
+                        .gameId(1L)
+                        .build();
 
         cacheFileService.mergeCacheFileToIncrementalCacheAndSave(cacheFileUploadDto, apexCacheFileInputStream, apexCacheFileResource.contentLength());
     }

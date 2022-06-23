@@ -1,13 +1,13 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.service;
 
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.CacheFile;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileUploadDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.exceptions.NoNewCacheEntryException;
 import com.dxvkstatecachebank.dxvkstatecachebank.exceptions.UnsuccessfulCacheMergeException;
-import com.dxvkstatecachebank.dxvkstatecachebank.service.dto.MergeResultDto;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.CacheFile;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
 import com.dxvkstatecachebank.dxvkstatecachebank.repository.CacheFileRepository;
+import com.dxvkstatecachebank.dxvkstatecachebank.service.dto.MergeResultDto;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.engine.jdbc.BlobProxy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +73,7 @@ public class CacheFileService {
     }
 
     private void writeStreamToFile(InputStream inputStream, Path filePath) throws IOException {
-        try(
+        try (
                 var outputStream = new BufferedOutputStream(Files.newOutputStream(filePath));
                 inputStream
         ) {
@@ -98,7 +98,7 @@ public class CacheFileService {
     }
 
     private void deleteTemporaryFile(Path temporaryFilePath) {
-        if(!temporaryFilePath.toFile().delete()) {
+        if (!temporaryFilePath.toFile().delete()) {
             log.error("Temporary file {} couldn't be deleted!", temporaryFilePath);
         }
     }
@@ -109,7 +109,7 @@ public class CacheFileService {
                 .orElseThrow();
 
         // If we don't have incremental cache yet, then merging is not required
-        if(game.getIncrementalCacheFile() == null) {
+        if (game.getIncrementalCacheFile() == null) {
             //TODO: optimize this to not use temp file to be able to read twice the same input
             //      (the problem is that you can't read twice from an input stream because you drain it but you can
             //       create two input streams for a temporary file, that's a workaround I used here for now)
@@ -144,11 +144,11 @@ public class CacheFileService {
         try {
             MergeResultDto mergeResult = dxvkCacheToolRunner.run(incrementalCacheFilePath, mergeableCacheFilePath, outputCacheFilePath);
 
-            if(!mergeResult.isSuccess()) {
+            if (!mergeResult.isSuccess()) {
                 throw new UnsuccessfulCacheMergeException();
             }
 
-            if(mergeResult.getSumOfEntriesMerged() <= 0) {
+            if (mergeResult.getSumOfEntriesMerged() <= 0) {
                 throw new NoNewCacheEntryException();
             }
 

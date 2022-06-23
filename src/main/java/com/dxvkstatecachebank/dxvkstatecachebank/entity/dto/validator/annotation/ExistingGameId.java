@@ -18,5 +18,5 @@ public @interface ExistingGameId {
 
     Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default{};
+    Class<? extends Payload>[] payload() default {};
 }

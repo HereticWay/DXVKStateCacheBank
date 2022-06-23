@@ -48,8 +48,9 @@ public class GameController {
     @GetMapping("/{gameId}")
     public ResponseEntity<GameInfoDto> findGameById(@PathVariable("gameId") Long gameId) {
         Optional<Game> gameFound = gameService.findById(gameId);
-        if(gameFound.isEmpty())
+        if (gameFound.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
 
         return ResponseEntity.ok(gameMapper.toDto(gameFound.get()));
     }
@@ -57,13 +58,14 @@ public class GameController {
     @GetMapping("/{gameId}/incremental_cache_file")
     public ResponseEntity<Resource> getLatestIncrementalCacheFile(@PathVariable("gameId") Long gameId) throws SQLException {
         Optional<Game> gameFound = gameService.findById(gameId);
-        if(gameFound.isEmpty()) {
+        if (gameFound.isEmpty()) {
+            // TODO: Return more descriptive error messages here
             return ResponseEntity.notFound().build();
         }
 
         Game game = gameFound.get();
         Blob cacheFileBlob = game.getIncrementalCacheFile();
-        if(cacheFileBlob == null) {
+        if (cacheFileBlob == null) {
             return ResponseEntity.notFound().build();
         }
 
@@ -94,8 +96,10 @@ public class GameController {
 
     @PostMapping
     public ResponseEntity<GameInfoDto> createGame(@Valid @RequestBody GameCreateDto gameCreateDto, BindingResult bindingResult) {
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             log.error(bindingResult.getAllErrors().toString());
+
+            // TODO: Return more descriptive error messages here
             return ResponseEntity.unprocessableEntity().build();
         }
 

@@ -12,7 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.*;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,7 +40,7 @@ public class CacheFileController {
     @GetMapping("/{cacheFileId}")
     public ResponseEntity<CacheFileInfoDto> findCacheFileById(@PathVariable("cacheFileId") Long cacheFileId) {
         Optional<CacheFile> cacheFileFound = cacheFileService.findById(cacheFileId);
-        if(cacheFileFound.isEmpty()) {
+        if (cacheFileFound.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
@@ -49,7 +52,7 @@ public class CacheFileController {
     @GetMapping("/{cacheFileId}/data")
     public ResponseEntity<Resource> getCacheFileData(@PathVariable("cacheFileId") Long cacheFileId) throws SQLException {
         Optional<CacheFile> cacheFileFound = cacheFileService.findById(cacheFileId);
-        if(cacheFileFound.isEmpty()) {
+        if (cacheFileFound.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
@@ -76,9 +79,11 @@ public class CacheFileController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CacheFileInfoDto> uploadCacheFile(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("cacheFileUploadDto") CacheFileUploadDto cacheFileUploadDto, BindingResult bindingResult) {
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             log.error(bindingResult.getAllErrors().toString());
-            return ResponseEntity.unprocessableEntity().build();
+            // TODO: Return more descriptive error messages here
+            return ResponseEntity.unprocessableEntity()
+                    .build();
         }
 
         try {
@@ -88,6 +93,7 @@ public class CacheFileController {
             CacheFileInfoDto cacheFileInfoDto = cacheFileMapper.toDto(savedCacheFile);
             return ResponseEntity.ok(cacheFileInfoDto);
         } catch (UnsuccessfulCacheMergeException | NoNewCacheEntryException e) {
+            // TODO: Return more descriptive error messages here
             return ResponseEntity.unprocessableEntity()
                     .build();
         } catch (Exception e) {
