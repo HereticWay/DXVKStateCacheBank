@@ -32,4 +32,8 @@ public class GameService {
     public void deleteById(Long gameId) {
         gameRepository.deleteById(gameId);
     }
+
+    public void flush() {
+        gameRepository.flush();
+    }
 }

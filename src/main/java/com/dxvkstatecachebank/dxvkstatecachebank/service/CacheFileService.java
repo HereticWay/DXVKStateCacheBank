@@ -174,4 +174,8 @@ public class CacheFileService {
     public boolean existsById(Long cacheFileId) {
         return cacheFileRepository.existsById(cacheFileId);
     }
+
+    public void flush() {
+        cacheFileRepository.flush();
+    }
 }
