@@ -21,9 +21,8 @@ public class GameService {
         return gameRepository.save(game);
     }
 
-    public Game findById(Long gameId) {
-        return gameRepository.findById(gameId)
-                .orElseThrow();  // It's okay now to throw an exception here
+    public Optional<Game> findById(Long gameId) {
+        return gameRepository.findById(gameId);
     }
 
     public void deleteById(Long gameId) {

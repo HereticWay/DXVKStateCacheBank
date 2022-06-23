@@ -8,6 +8,7 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.GameMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -15,14 +16,18 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/game")
+@Slf4j
 public class GameController {
     @Autowired
     private GameService gameService;
@@ -41,14 +46,27 @@ public class GameController {
     }
 
     @GetMapping("/{gameId}")
-    public GameInfoDto findGameById(@PathVariable("gameId") Long gameId) {
-        return gameMapper.toDto(gameService.findById(gameId));
+    public ResponseEntity<GameInfoDto> findGameById(@PathVariable("gameId") Long gameId) {
+        Optional<Game> gameFound = gameService.findById(gameId);
+        if(gameFound.isEmpty())
+            return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok(gameMapper.toDto(gameFound.get()));
     }
 
     @GetMapping("/{gameId}/incremental_cache_file")
     public ResponseEntity<Resource> getLatestIncrementalCacheFile(@PathVariable("gameId") Long gameId) throws SQLException {
-        Game game = gameService.findById(gameId);
+        Optional<Game> gameFound = gameService.findById(gameId);
+        if(gameFound.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Game game = gameFound.get();
         Blob cacheFileBlob = game.getIncrementalCacheFile();
+        if(cacheFileBlob == null) {
+            return ResponseEntity.notFound().build();
+        }
+
         String cacheFileName = "%s.dxvk-cache".formatted(game.getCacheFileName());
 
         HttpHeaders headers = new HttpHeaders();
@@ -75,9 +93,14 @@ public class GameController {
     }
 
     @PostMapping
-    public GameInfoDto createGame(@RequestBody GameCreateDto gameCreateDto) {
+    public ResponseEntity<GameInfoDto> createGame(@Valid @RequestBody GameCreateDto gameCreateDto, BindingResult bindingResult) {
+        if(bindingResult.hasErrors()) {
+            log.error(bindingResult.getAllErrors().toString());
+            return ResponseEntity.unprocessableEntity().build();
+        }
+
         Game gameCreated = gameService.save(gameMapper.toGame(gameCreateDto));
-        return gameMapper.toDto(gameCreated);
+        return ResponseEntity.ok(gameMapper.toDto(gameCreated));
     }
 
     @DeleteMapping("/{gameId}")
