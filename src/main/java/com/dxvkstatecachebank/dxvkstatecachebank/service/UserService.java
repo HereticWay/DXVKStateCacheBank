@@ -25,8 +25,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User findById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow();  // It's okay now to throw an exception here
+    public Optional<User> findById(Long userId) {
+        return userRepository.findById(userId);
     }
 }
