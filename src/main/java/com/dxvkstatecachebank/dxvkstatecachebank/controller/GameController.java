@@ -4,6 +4,7 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileInfoDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.GameCreateDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.GameInfoDto;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.validator.annotation.ExistingGameId;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.GameMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
@@ -20,6 +21,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Positive;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.time.ZoneOffset;
@@ -107,6 +110,34 @@ public class GameController {
 
         Game gameCreated = gameService.save(gameMapper.toGame(gameCreateDto));
         return ResponseEntity.ok(gameMapper.toDto(gameCreated));
+    }
+
+    @PutMapping("/{gameId}/name")
+    public ResponseEntity<GameInfoDto> renameGame(@Valid @PathVariable("gameId") @ExistingGameId Long gameId, @Valid @RequestBody @NotEmpty String newName, BindingResult bindingResult) {
+        if(bindingResult.hasErrors()) {
+            log.error(bindingResult.getAllErrors().toString());
+            return ResponseEntity.badRequest().build();
+        }
+
+        Game game = gameService.findById(gameId)
+                .orElseThrow();
+        game.setName(newName);
+
+        return ResponseEntity.ok(gameMapper.toDto(gameService.save(game)));
+    }
+
+    @PutMapping("/{gameId}/steam_id")
+    public ResponseEntity<GameInfoDto> changeSteamIdOfGame(@Valid @PathVariable("gameId") @ExistingGameId Long gameId, @Valid @Positive @RequestBody Long newSteamId, BindingResult bindingResult) {
+        if(bindingResult.hasErrors()) {
+            log.error(bindingResult.getAllErrors().toString());
+            return ResponseEntity.badRequest().build();
+        }
+
+        Game game = gameService.findById(gameId)
+                .orElseThrow();
+        game.setSteamId(newSteamId);
+
+        return ResponseEntity.ok(gameMapper.toDto(gameService.save(game)));
     }
 
     @DeleteMapping("/{gameId}")
