@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Constraint(validatedBy = ExistingGameIdValidator.class)
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(value = RUNTIME)
 public @interface ExistingGameId {
     String message() default "There is no game with this id!";

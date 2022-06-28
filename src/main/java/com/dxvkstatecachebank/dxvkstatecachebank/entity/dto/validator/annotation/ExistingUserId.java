@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Constraint(validatedBy = ExistingUserIdValidator.class)
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(value = RUNTIME)
 public @interface ExistingUserId {
     String message() default "There is no user with this id!";
