@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class CacheFileMapper {
@@ -19,13 +21,17 @@ public class CacheFileMapper {
     private GameService gameService;
 
     public CacheFileInfoDto toDto(CacheFile cacheFile) {
-        Long uploaderId = cacheFile.getUploader().getId();
-        Long gameId = cacheFile.getGame().getId();
+        Game game = Objects.requireNonNull(cacheFile.getGame());
+        Optional<User> uploader = Optional.ofNullable(cacheFile.getUploader());
+
+        Long gameId = game.getId();
+        Long uploaderId = uploader.map(User::getId)
+                .orElse(null);
 
         return CacheFileInfoDto.builder()
                 .id(cacheFile.getId())
                 .uploadDateTime(cacheFile.getUploadDateTime())
-                .uploaderLink("/user/%d".formatted(uploaderId))
+                .uploaderLink(uploaderId == null ? null : "/user/%d".formatted(uploaderId))
                 .gameLink("/game/%d".formatted(gameId))
                 .dataLink("/cache_file/%d/data".formatted(cacheFile.getId()))
                 .build();
