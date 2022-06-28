@@ -25,6 +25,7 @@ import javax.validation.Valid;
 import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 @RestController
@@ -74,6 +75,7 @@ public class CacheFileController {
                 .headers(headers)
                 .contentLength(cacheFileBlob.length())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .lastModified(cacheFile.getUploadDateTime().toInstant(ZoneOffset.UTC))
                 .body(inputStreamResource);
     }
 

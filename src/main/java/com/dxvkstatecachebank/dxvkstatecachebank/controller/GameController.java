@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,6 +85,7 @@ public class GameController {
                 .headers(headers)
                 .contentLength(cacheFileBlob.length())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .lastModified(game.getIncrementalCacheLastModified().toInstant(ZoneOffset.UTC))
                 .body(inputStreamResource);
     }
 

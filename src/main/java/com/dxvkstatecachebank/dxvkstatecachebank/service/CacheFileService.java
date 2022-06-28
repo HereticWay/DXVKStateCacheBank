@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,6 +125,7 @@ public class CacheFileService {
                         .getData();
 
                 game.setIncrementalCacheFile(BlobProxy.generateProxy(readFileToInputStream(tempFilePath), cacheFileData.length()));
+                game.setIncrementalCacheLastModified(LocalDateTime.now());
                 gameService.save(game);
 
                 return cacheFile;

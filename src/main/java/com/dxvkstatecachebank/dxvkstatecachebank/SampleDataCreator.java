@@ -16,6 +16,7 @@ import javax.transaction.Transactional;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.HexFormat;
 
 @Component
@@ -79,6 +80,7 @@ public class SampleDataCreator {
                             .name("Apex Legends")
                             .cacheFileName("r5apex")
                             .incrementalCacheFile(BlobProxy.generateProxy(apexCacheFileInputStream, apexCacheFileResource.contentLength()))
+                            .incrementalCacheLastModified(LocalDateTime.now())
                             .steamId(1172470L)
                             .build()
             );
