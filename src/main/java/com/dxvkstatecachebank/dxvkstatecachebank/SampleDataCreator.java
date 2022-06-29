@@ -19,7 +19,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
 
-@Component
+//@Component
 public class SampleDataCreator {
     private final UserService userService;
     private final GameRepository gameService;
