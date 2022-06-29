@@ -1,4 +1,4 @@
-package com.dxvkstatecachebank.dxvkstatecachebank.integration;
+package com.dxvkstatecachebank.dxvkstatecachebank.integrationtest;
 
 import com.dxvkstatecachebank.dxvkstatecachebank.data.TestDataCreator;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.*;
