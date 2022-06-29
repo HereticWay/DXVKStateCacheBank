@@ -6,8 +6,10 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.User;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileInfoDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileUploadDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
+import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
 import org.hibernate.engine.jdbc.BlobProxy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -18,10 +20,12 @@ import java.util.Optional;
 @Component
 public class CacheFileMapper {
     private final GameService gameService;
+    private final UserService userService;
 
     @Autowired
-    public CacheFileMapper(GameService gameService) {
+    public CacheFileMapper(@Lazy GameService gameService, @Lazy UserService userService) {
         this.gameService = gameService;
+        this.userService = userService;
     }
 
     public CacheFileInfoDto toDto(CacheFile cacheFile) {
@@ -47,8 +51,11 @@ public class CacheFileMapper {
         Game game = gameService.findById(gameId)
                 .orElseThrow();
 
+        User uploader = userService.findById(uploaderId)
+                .orElseThrow();
+
         return CacheFile.builder()
-                .uploader(User.builder().id(uploaderId).build())
+                .uploader(uploader)
                 .uploadDateTime(LocalDateTime.now())
                 .game(game)
                 .data(BlobProxy.generateProxy(cacheFileInputStream, cacheFileSize))
