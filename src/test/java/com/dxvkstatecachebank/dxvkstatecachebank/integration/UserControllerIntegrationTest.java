@@ -20,6 +20,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.ResponseExtractor;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -90,5 +99,40 @@ class UserControllerIntegrationTest {
                 .isEqualTo(creationResponse);
     }
 
+    @Test
+    void testGetProfilePictureOfPostedUserIsTheSameLengthAsTheUploadedProfilePicture() {
+        var profilePicResource = new ClassPathResource("sample/profile_pic_1.jpg");
+        var userToPost = UserCreateDto.builder()
+                .name("Some Body")
+                .password("password12345")
+                .email("abc@gmail.com")
+                .build();
 
+        ResponseEntity<UserInfoDto> creationResponse = postUser(profilePicResource, userToPost);
+        assertThat(creationResponse.getStatusCode())
+                .isEqualTo(HttpStatus.OK);
+        UserInfoDto createdUserInfo = creationResponse.getBody();
+        assertThat(createdUserInfo).isNotNull();
+
+        RequestCallback requestCallback = request -> request.getHeaders()
+                .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
+
+        ResponseExtractor<Void> responseExtractor = response -> {
+            InputStream in = response.getBody();
+            // Count the bytes received from the server
+            long bytesReceived = 0L;
+            while (in.available() > 0) {
+                int available = in.available();
+                in.skipNBytes(available);
+                bytesReceived += available;
+            }
+
+            // Assert the length of the picture we got back
+            assertThat(bytesReceived).isEqualTo(profilePicResource.contentLength());
+            return null;
+        };
+
+        String url = "%s/%d/profile_picture".formatted(USER_ENDPOINT_URL, createdUserInfo.getId());
+        restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
+    }
 }
