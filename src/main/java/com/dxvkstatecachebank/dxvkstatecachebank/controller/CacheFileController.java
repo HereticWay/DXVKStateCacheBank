@@ -32,11 +32,15 @@ import java.util.Optional;
 @RequestMapping("/cache_file")
 @Slf4j
 public class CacheFileController {
-    @Autowired
-    private CacheFileService cacheFileService;
+    private final CacheFileService cacheFileService;
+
+    private final CacheFileMapper cacheFileMapper;
 
     @Autowired
-    private CacheFileMapper cacheFileMapper;
+    public CacheFileController(CacheFileService cacheFileService, CacheFileMapper cacheFileMapper) {
+        this.cacheFileService = cacheFileService;
+        this.cacheFileMapper = cacheFileMapper;
+    }
 
     @GetMapping("/{cacheFileId}")
     public ResponseEntity<CacheFileInfoDto> findCacheFileById(@PathVariable("cacheFileId") Long cacheFileId) {

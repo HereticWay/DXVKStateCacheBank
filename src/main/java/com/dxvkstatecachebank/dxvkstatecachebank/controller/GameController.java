@@ -34,14 +34,18 @@ import java.util.Optional;
 @RequestMapping("/game")
 @Slf4j
 public class GameController {
+    private final GameService gameService;
+    private final GameMapper gameMapper;
+    private final CacheFileService cacheFileService;
+    private final CacheFileMapper cacheFileMapper;
+
     @Autowired
-    private GameService gameService;
-    @Autowired
-    private GameMapper gameMapper;
-    @Autowired
-    private CacheFileService cacheFileService;
-    @Autowired
-    private CacheFileMapper cacheFileMapper;
+    public GameController(GameService gameService, GameMapper gameMapper, CacheFileService cacheFileService, CacheFileMapper cacheFileMapper) {
+        this.gameService = gameService;
+        this.gameMapper = gameMapper;
+        this.cacheFileService = cacheFileService;
+        this.cacheFileMapper = cacheFileMapper;
+    }
 
     @GetMapping
     public List<GameInfoDto> listAllGames() {

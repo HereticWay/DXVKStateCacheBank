@@ -11,12 +11,14 @@ import java.util.Optional;
 
 @Service
 public class GameService {
-    @Autowired
-    private GameRepository gameRepository;
+    private final GameRepository gameRepository;
+    private final CacheFileService cacheFileService;
 
     @Autowired
-    @Lazy
-    private CacheFileService cacheFileService;
+    public GameService(GameRepository gameRepository, @Lazy CacheFileService cacheFileService) {
+        this.gameRepository = gameRepository;
+        this.cacheFileService = cacheFileService;
+    }
 
     public List<Game> findAll() {
         return gameRepository.findAll();

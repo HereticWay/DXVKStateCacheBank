@@ -10,8 +10,12 @@ import javax.validation.ConstraintValidatorContext;
 
 @Component
 public class ExistingGameIdValidator implements ConstraintValidator<ExistingGameId, Long> {
+    private final GameService gameService;
+
     @Autowired
-    private GameService gameService;
+    public ExistingGameIdValidator(GameService gameService) {
+        this.gameService = gameService;
+    }
 
     @Override
     public boolean isValid(Long value, ConstraintValidatorContext context) {

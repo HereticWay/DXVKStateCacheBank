@@ -10,8 +10,12 @@ import javax.validation.ConstraintValidatorContext;
 
 @Component
 public class ExistingUserIdValidator implements ConstraintValidator<ExistingUserId, Long> {
+    private final UserService userService;
+
     @Autowired
-    private UserService userService;
+    public ExistingUserIdValidator(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public boolean isValid(Long value, ConstraintValidatorContext context) {

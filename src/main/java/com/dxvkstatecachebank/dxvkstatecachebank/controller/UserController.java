@@ -31,17 +31,18 @@ import java.util.Optional;
 @RequestMapping("/user")
 @Slf4j
 public class UserController {
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final CacheFileService cacheFileService;
+    private final CacheFileMapper cacheFileMapper;
+    private final UserMapper userMapper;
 
     @Autowired
-    private CacheFileService cacheFileService;
-
-    @Autowired
-    private CacheFileMapper cacheFileMapper;
-
-    @Autowired
-    private UserMapper userMapper;
+    public UserController(UserService userService, CacheFileService cacheFileService, CacheFileMapper cacheFileMapper, UserMapper userMapper) {
+        this.userService = userService;
+        this.cacheFileService = cacheFileService;
+        this.cacheFileMapper = cacheFileMapper;
+        this.userMapper = userMapper;
+    }
 
     @GetMapping
     public List<UserInfoDto> listAllUsers() {

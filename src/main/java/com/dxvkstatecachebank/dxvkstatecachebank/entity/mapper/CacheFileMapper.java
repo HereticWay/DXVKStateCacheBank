@@ -17,8 +17,12 @@ import java.util.Optional;
 
 @Component
 public class CacheFileMapper {
+    private final GameService gameService;
+
     @Autowired
-    private GameService gameService;
+    public CacheFileMapper(GameService gameService) {
+        this.gameService = gameService;
+    }
 
     public CacheFileInfoDto toDto(CacheFile cacheFile) {
         Game game = Objects.requireNonNull(cacheFile.getGame());
