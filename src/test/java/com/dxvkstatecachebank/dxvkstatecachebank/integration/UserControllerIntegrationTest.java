@@ -1,8 +1,7 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.integration;
 
 import com.dxvkstatecachebank.dxvkstatecachebank.data.TestDataCreator;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserCreateDto;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserInfoDto;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.*;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.test.annotation.DirtiesContext;
@@ -23,13 +21,11 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.List;
 
+import static com.dxvkstatecachebank.dxvkstatecachebank.data.TestData.*;
 import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
@@ -53,9 +49,7 @@ class UserControllerIntegrationTest {
     @Autowired
     private TestDataCreator testDataCreator;
 
-    private final String USER_ENDPOINT_URL = "/user";
-
-    private ResponseEntity<UserInfoDto> postUser(Resource profilePictureResource, UserCreateDto userCreateDto) {
+    private ResponseEntity<UserInfoDto> postUser(UserCreateDto userCreateDto, Resource profilePictureResource) {
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
@@ -75,22 +69,15 @@ class UserControllerIntegrationTest {
 
     @Test
     void testCreateUserAndGetUser() {
-        var profilePicResource = new ClassPathResource("sample/profile_pic_1.jpg");
-        var userToPost = UserCreateDto.builder()
-                .name("Some Body")
-                .password("password12345")
-                .email("abc@gmail.com")
-                .build();
-
-        ResponseEntity<UserInfoDto> creationResponse = postUser(profilePicResource, userToPost);
+        ResponseEntity<UserInfoDto> creationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(creationResponse.getStatusCode())
                 .isEqualTo(HttpStatus.OK);
 
         UserInfoDto userInfoDto = creationResponse.getBody();
         assertThat(userInfoDto).isNotNull();
         assertThat(userInfoDto.getId()).isNotNull();
-        assertThat(userInfoDto.getName()).isEqualTo(userToPost.getName());
-        assertThat(userInfoDto.getEmail()).isEqualTo(userToPost.getEmail());
+        assertThat(userInfoDto.getName()).isEqualTo(SAMPLE_USER_CREATE_DTO_1.getName());
+        assertThat(userInfoDto.getEmail()).isEqualTo(SAMPLE_USER_CREATE_DTO_1.getEmail());
         assertThat(userInfoDto.getCacheFilesLink()).contains(String.valueOf(userInfoDto.getId()));
         assertThat(userInfoDto.getProfilePictureLink()).contains(String.valueOf(userInfoDto.getId()));
 
@@ -101,14 +88,7 @@ class UserControllerIntegrationTest {
 
     @Test
     void testGetProfilePictureOfPostedUserIsTheSameLengthAsTheUploadedProfilePicture() {
-        var profilePicResource = new ClassPathResource("sample/profile_pic_1.jpg");
-        var userToPost = UserCreateDto.builder()
-                .name("Some Body")
-                .password("password12345")
-                .email("abc@gmail.com")
-                .build();
-
-        ResponseEntity<UserInfoDto> creationResponse = postUser(profilePicResource, userToPost);
+        ResponseEntity<UserInfoDto> creationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(creationResponse.getStatusCode())
                 .isEqualTo(HttpStatus.OK);
         UserInfoDto createdUserInfo = creationResponse.getBody();
@@ -128,11 +108,49 @@ class UserControllerIntegrationTest {
             }
 
             // Assert the length of the picture we got back
-            assertThat(bytesReceived).isEqualTo(profilePicResource.contentLength());
+            assertThat(bytesReceived).isEqualTo(PROFILE_PIC_1_RESOURCE.contentLength());
             return null;
         };
 
         String url = "%s/%d/profile_picture".formatted(USER_ENDPOINT_URL, createdUserInfo.getId());
         restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
+    }
+
+    private ResponseEntity<CacheFileInfoDto> postCacheFile(CacheFileUploadDto cacheFileUploadDto, Resource cacheFileResource) {
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        var map = new LinkedMultiValueMap<String, Object>();
+        map.add("file", cacheFileResource);
+        map.add("cacheFileUploadDto", cacheFileUploadDto);
+
+        var request = new HttpEntity<MultiValueMap<String, Object>>(map, headers);
+        return restTemplate.postForEntity(CACHE_FILE_ENDPOINT_URL, request, CacheFileInfoDto.class);
+    }
+
+    private ResponseEntity<GameInfoDto> postGame(GameCreateDto gameCreateDto) {
+        return restTemplate.postForEntity(GAME_ENDPOINT_URL, gameCreateDto, GameInfoDto.class);
+    }
+
+    @Test
+    void testGetListOfUploadedCacheFilesOfUser() {
+        ResponseEntity<UserInfoDto> userCreationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        ResponseEntity<GameInfoDto> gameCreationResponse = postGame(SAMPLE_GAME_CREATE_DTO_APEX);
+        long userId = userCreationResponse.getBody().getId();
+        long gameId = gameCreationResponse.getBody().getId();
+
+        CacheFileUploadDto cacheFileUploadDto = CacheFileUploadDto.builder()
+                .uploaderId(userId)
+                .gameId(gameId)
+                .build();
+
+        postCacheFile(cacheFileUploadDto, SAMPLE_APEX_CACHE_FILE_1_RESOURCE);
+        postCacheFile(cacheFileUploadDto, SAMPLE_APEX_CACHE_FILE_2_RESOURCE);
+
+        String url = "%s/%d/cache_files".formatted(USER_ENDPOINT_URL, userId);
+        ResponseEntity<CacheFileInfoDto[]> cacheFilesListResponse = restTemplate.getForEntity(url, CacheFileInfoDto[].class);
+        assertThat(cacheFilesListResponse).isNotNull();
+        assertThat(cacheFilesListResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(cacheFilesListResponse.getBody()).isNotNull().hasSize(2);
     }
 }
