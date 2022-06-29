@@ -36,4 +36,5 @@ public class TestData {
     public static final ClassPathResource SAMPLE_OVERWATCH_CACHE_FILE_1_RESOURCE = new ClassPathResource("sample/overwatch.dxvk-cache");
 
     public static final ClassPathResource PROFILE_PIC_1_RESOURCE = new ClassPathResource("sample/profile_pic_1.jpg");
+    public static final ClassPathResource PROFILE_PIC_2_RESOURCE = new ClassPathResource("sample/profile_pic_2.jpg");
 }

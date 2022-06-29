@@ -61,9 +61,35 @@ class UserControllerIntegrationTest {
         return restTemplate.postForEntity(USER_ENDPOINT_URL, request, UserInfoDto.class);
     }
 
+    private void updateUser(long userId, UserUpdateDto userUpdateDto) {
+        String url = "%s/%d".formatted(USER_ENDPOINT_URL, userId);
+        restTemplate.put(url, userUpdateDto);
+    }
+
+    private void deleteUser(long userId) {
+        String url = "%s/%d".formatted(USER_ENDPOINT_URL, userId);
+        restTemplate.delete(url);
+    }
+
+    private void updateUserProfilePicture(long userId, Resource profilePictureResource) {
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        var map = new LinkedMultiValueMap<String, Object>();
+        map.add("file", profilePictureResource);
+
+        var request = new HttpEntity<MultiValueMap<String, Object>>(map, headers);
+        String url = "%s/%d/profile_picture".formatted(USER_ENDPOINT_URL, userId);
+        restTemplate.put(url, request);
+    }
+
     private ResponseEntity<UserInfoDto> getUserById(Long userId) {
         String url = "%s/%d".formatted(USER_ENDPOINT_URL, userId);
-        return restTemplate.getForEntity( url, UserInfoDto.class);
+        return restTemplate.getForEntity(url, UserInfoDto.class);
+    }
+
+    private ResponseEntity<UserInfoDto[]> getAllUsers() {
+        return restTemplate.getForEntity(USER_ENDPOINT_URL, UserInfoDto[].class);
     }
 
     private ResponseEntity<CacheFileInfoDto[]> getAllCacheFilesByUserId(long userId) {
@@ -88,7 +114,26 @@ class UserControllerIntegrationTest {
     }
 
     @Test
-    void emptyDatabase_addNewUser_shouldReturnAddedUser() {
+    void emptyDatabase_getAllUsers_shouldReturnEmptyArray() {
+        ResponseEntity<UserInfoDto[]> response = getAllUsers();
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull().isEmpty();
+    }
+
+    @Test
+    void emptyDatabase_addTwoUsers_getAllUsers_shouldReturnSizeTwoArray() {
+        postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        postUser(SAMPLE_USER_CREATE_DTO_2, PROFILE_PIC_2_RESOURCE);
+
+        ResponseEntity<UserInfoDto[]> response = getAllUsers();
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull().hasSize(2);
+    }
+
+    @Test
+    void emptyDatabase_addNewUser_getUserByItsId_shouldReturnAddedUser() {
         ResponseEntity<UserInfoDto> creationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(creationResponse.getStatusCode())
                 .isEqualTo(HttpStatus.OK);
@@ -114,12 +159,12 @@ class UserControllerIntegrationTest {
     }
 
     @Test
-    void oneUserStored_getUserProfilePicture_returnedProfilePictureShouldHaveCorrectFileLength() {
+    void oneUserStored_getUserProfilePicture_shouldHaveCorrectFileLength() {
         ResponseEntity<UserInfoDto> creationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(creationResponse.getStatusCode())
                 .isEqualTo(HttpStatus.OK);
-        UserInfoDto createdUserInfo = creationResponse.getBody();
-        assertThat(createdUserInfo).isNotNull();
+        assertThat(creationResponse.getBody()).isNotNull();
+        long userId = creationResponse.getBody().getId();
 
         RequestCallback requestCallback = request -> request.getHeaders()
                 .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
@@ -139,14 +184,16 @@ class UserControllerIntegrationTest {
             return null;
         };
 
-        String url = "%s/%d/profile_picture".formatted(USER_ENDPOINT_URL, createdUserInfo.getId());
+        String url = "%s/%d/profile_picture".formatted(USER_ENDPOINT_URL, userId);
         restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
     }
 
     @Test
-    void addOneUser_addOneGame_addTwoCacheFiles_getUserCacheFilesShouldReturnTwoCacheEntries() {
+    void addOneUser_addOneGame_addTwoCacheFiles_listUserCacheFiles_shouldReturnTwoCacheEntries() {
         ResponseEntity<UserInfoDto> userCreationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         ResponseEntity<GameInfoDto> gameCreationResponse = postGame(SAMPLE_GAME_CREATE_DTO_APEX);
+        assertThat(userCreationResponse.getBody()).isNotNull();
+        assertThat(gameCreationResponse.getBody()).isNotNull();
         long userId = userCreationResponse.getBody().getId();
         long gameId = gameCreationResponse.getBody().getId();
 
@@ -162,5 +209,89 @@ class UserControllerIntegrationTest {
         assertThat(cacheFilesListResponse).isNotNull();
         assertThat(cacheFilesListResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(cacheFilesListResponse.getBody()).isNotNull().hasSize(2);
+    }
+
+    @Test
+    void oneUserStored_updateUser_getUser_shouldReturnUpdatedUser() {
+        ResponseEntity<UserInfoDto> userCreationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        assertThat(userCreationResponse.getBody()).isNotNull();
+        long userId = userCreationResponse.getBody().getId();
+
+        UserUpdateDto userUpdateDto = UserUpdateDto.builder()
+                .name("Claus Holczer")
+                .password("extraStrongPassword")
+                .email("claus@holzhoff.co")
+                .build();
+        updateUser(userId, userUpdateDto);
+
+        ResponseEntity<UserInfoDto> getUserResponse = getUserById(userId);
+        assertThat(getUserResponse).isNotNull();
+        UserInfoDto userInfoDto = getUserResponse.getBody();
+        assertThat(userInfoDto).isNotNull();
+        assertThat(userInfoDto.getName()).isEqualTo(userUpdateDto.getName());
+        assertThat(userInfoDto.getEmail()).isEqualTo(userUpdateDto.getEmail());
+    }
+
+    @Test
+    void oneUserStored_updateUserProfilePicture_getUserProfilePicture_shouldHaveCorrectFileLength() {
+        ResponseEntity<UserInfoDto> userCreationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        assertThat(userCreationResponse.getBody()).isNotNull();
+        long userId = userCreationResponse.getBody().getId();
+        updateUserProfilePicture(userId, PROFILE_PIC_2_RESOURCE);
+
+        RequestCallback requestCallback = request -> request.getHeaders()
+                .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
+
+        ResponseExtractor<Void> responseExtractor = response -> {
+            InputStream in = response.getBody();
+            // Count the bytes received from the server
+            long bytesReceived = 0L;
+            while (in.available() > 0) {
+                int available = in.available();
+                in.skipNBytes(available);
+                bytesReceived += available;
+            }
+
+            // Assert the length of the picture we got back
+            assertThat(bytesReceived).isEqualTo(PROFILE_PIC_2_RESOURCE.contentLength());
+            return null;
+        };
+
+        String url = "%s/%d/profile_picture".formatted(USER_ENDPOINT_URL, userId);
+        restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
+    }
+
+    @Test
+    void oneUserStored_deleteUser_getAllUsers_shouldReturnEmptyArray() {
+        ResponseEntity<UserInfoDto> userCreationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        assertThat(userCreationResponse.getBody()).isNotNull();
+        long userId = userCreationResponse.getBody().getId();
+        deleteUser(userId);
+
+        ResponseEntity<UserInfoDto[]> allUsersResponse = getAllUsers();
+        assertThat(allUsersResponse).isNotNull();
+        assertThat(allUsersResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(allUsersResponse.getBody()).isNotNull().isEmpty();
+    }
+
+    @Test
+    void twoUsersStored_deleteFirstUser_getFirstUser_shouldReturn404NotFound_getSecondUser_shouldReturnSecondUser() {
+        ResponseEntity<UserInfoDto> user1CreationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        ResponseEntity<UserInfoDto> user2CreationResponse = postUser(SAMPLE_USER_CREATE_DTO_2, PROFILE_PIC_2_RESOURCE);
+        assertThat(user1CreationResponse.getBody()).isNotNull();
+        assertThat(user2CreationResponse.getBody()).isNotNull();
+        long user1Id = user1CreationResponse.getBody().getId();
+        long user2Id = user2CreationResponse.getBody().getId();
+
+        deleteUser(user1Id);
+
+        ResponseEntity<UserInfoDto> firstUserResponse = getUserById(user1Id);
+        assertThat(firstUserResponse).isNotNull();
+        assertThat(firstUserResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        ResponseEntity<UserInfoDto> secondUserResponse = getUserById(user2Id);
+        assertThat(secondUserResponse).isNotNull();
+        assertThat(secondUserResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(secondUserResponse.getBody()).isEqualTo(user2CreationResponse.getBody());
     }
 }
