@@ -40,4 +40,8 @@ public class UserService {
     public void flush() {
         userRepository.flush();
     }
+
+    public void deleteAll() {
+        userRepository.deleteAll();
+    }
 }

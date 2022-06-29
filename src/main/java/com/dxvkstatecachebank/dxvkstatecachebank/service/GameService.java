@@ -42,4 +42,8 @@ public class GameService {
     public void flush() {
         gameRepository.flush();
     }
+
+    public void deleteAll() {
+        gameRepository.deleteAll();
+    }
 }

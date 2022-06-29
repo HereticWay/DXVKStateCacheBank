@@ -188,4 +188,8 @@ public class CacheFileService {
     public void deleteAllByGameId(Long gameId) {
         cacheFileRepository.deleteAllByGameId(gameId);
     }
+
+    public void deleteAll() {
+        cacheFileRepository.deleteAll();
+    }
 }
