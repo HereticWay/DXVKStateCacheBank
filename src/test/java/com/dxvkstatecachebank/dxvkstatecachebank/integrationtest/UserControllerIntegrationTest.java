@@ -5,7 +5,9 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.*;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
+import com.dxvkstatecachebank.dxvkstatecachebank.util.RequestUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,9 @@ class UserControllerIntegrationTest {
     private TestRestTemplate restTemplate;
 
     @Autowired
+    private RequestUtils requestUtils;
+
+    @Autowired
     private CacheFileService cacheFileService;
 
     @Autowired
@@ -48,74 +53,9 @@ class UserControllerIntegrationTest {
     @Autowired
     private TestDataCreator testDataCreator;
 
-    private ResponseEntity<UserInfoDto> postUser(UserCreateDto userCreateDto, Resource profilePictureResource) {
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        var map = new LinkedMultiValueMap<String, Object>();
-        map.add("file", profilePictureResource);
-        map.add("userCreateDto", userCreateDto);
-
-        var request = new HttpEntity<MultiValueMap<String, Object>>(map, headers);
-
-        return restTemplate.postForEntity(USER_ENDPOINT_URL, request, UserInfoDto.class);
-    }
-
-    private void updateUser(long userId, UserUpdateDto userUpdateDto) {
-        String url = "%s/%d".formatted(USER_ENDPOINT_URL, userId);
-        restTemplate.put(url, userUpdateDto);
-    }
-
-    private void deleteUser(long userId) {
-        String url = "%s/%d".formatted(USER_ENDPOINT_URL, userId);
-        restTemplate.delete(url);
-    }
-
-    private void updateUserProfilePicture(long userId, Resource profilePictureResource) {
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        var map = new LinkedMultiValueMap<String, Object>();
-        map.add("file", profilePictureResource);
-
-        var request = new HttpEntity<MultiValueMap<String, Object>>(map, headers);
-        String url = "%s/%d/profile_picture".formatted(USER_ENDPOINT_URL, userId);
-        restTemplate.put(url, request);
-    }
-
-    private ResponseEntity<UserInfoDto> getUserById(Long userId) {
-        String url = "%s/%d".formatted(USER_ENDPOINT_URL, userId);
-        return restTemplate.getForEntity(url, UserInfoDto.class);
-    }
-
-    private ResponseEntity<UserInfoDto[]> getAllUsers() {
-        return restTemplate.getForEntity(USER_ENDPOINT_URL, UserInfoDto[].class);
-    }
-
-    private ResponseEntity<CacheFileInfoDto[]> getAllCacheFilesByUserId(long userId) {
-        String url = "%s/%d/cache_files".formatted(USER_ENDPOINT_URL, userId);
-        return restTemplate.getForEntity(url, CacheFileInfoDto[].class);
-    }
-
-    private ResponseEntity<CacheFileInfoDto> postCacheFile(CacheFileUploadDto cacheFileUploadDto, Resource cacheFileResource) {
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        var map = new LinkedMultiValueMap<String, Object>();
-        map.add("file", cacheFileResource);
-        map.add("cacheFileUploadDto", cacheFileUploadDto);
-
-        var request = new HttpEntity<MultiValueMap<String, Object>>(map, headers);
-        return restTemplate.postForEntity(CACHE_FILE_ENDPOINT_URL, request, CacheFileInfoDto.class);
-    }
-
-    private ResponseEntity<GameInfoDto> postGame(GameCreateDto gameCreateDto) {
-        return restTemplate.postForEntity(GAME_ENDPOINT_URL, gameCreateDto, GameInfoDto.class);
-    }
-
     @Test
     void emptyDatabase_getAllUsers_shouldReturnEmptyArray() {
-        ResponseEntity<UserInfoDto[]> response = getAllUsers();
+        ResponseEntity<UserInfoDto[]> response = requestUtils.getAllUsers();
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull().isEmpty();
@@ -123,10 +63,10 @@ class UserControllerIntegrationTest {
 
     @Test
     void emptyDatabase_addTwoUsers_getAllUsers_shouldReturnSizeTwoArray() {
-        postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
-        postUser(SAMPLE_USER_CREATE_DTO_2, PROFILE_PIC_2_RESOURCE);
+        requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        requestUtils.postUser(SAMPLE_USER_CREATE_DTO_2, PROFILE_PIC_2_RESOURCE);
 
-        ResponseEntity<UserInfoDto[]> response = getAllUsers();
+        ResponseEntity<UserInfoDto[]> response = requestUtils.getAllUsers();
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull().hasSize(2);
@@ -134,7 +74,7 @@ class UserControllerIntegrationTest {
 
     @Test
     void emptyDatabase_addNewUser_getUserByItsId_shouldReturnAddedUser() {
-        ResponseEntity<UserInfoDto> creationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        ResponseEntity<UserInfoDto> creationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(creationResponse.getStatusCode())
                 .isEqualTo(HttpStatus.OK);
 
@@ -146,21 +86,21 @@ class UserControllerIntegrationTest {
         assertThat(userInfoDto.getCacheFilesLink()).contains(String.valueOf(userInfoDto.getId()));
         assertThat(userInfoDto.getProfilePictureLink()).contains(String.valueOf(userInfoDto.getId()));
 
-        ResponseEntity<UserInfoDto> getResponse = getUserById(userInfoDto.getId());
+        ResponseEntity<UserInfoDto> getResponse = requestUtils.getUserById(userInfoDto.getId());
         assertThat(getResponse).isNotNull()
                 .isEqualTo(creationResponse);
     }
 
     @Test
     void emptyDatabase_getUserBySomeRandomId_shouldReturn404NotFound() {
-        ResponseEntity<UserInfoDto> getResponse = getUserById(54321L);
+        ResponseEntity<UserInfoDto> getResponse = requestUtils.getUserById(54321L);
         assertThat(getResponse).isNotNull();
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
     void oneUserStored_getUserProfilePicture_shouldHaveCorrectFileLength() {
-        ResponseEntity<UserInfoDto> creationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        ResponseEntity<UserInfoDto> creationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(creationResponse.getStatusCode())
                 .isEqualTo(HttpStatus.OK);
         assertThat(creationResponse.getBody()).isNotNull();
@@ -190,8 +130,8 @@ class UserControllerIntegrationTest {
 
     @Test
     void addOneUser_addOneGame_addTwoCacheFiles_listUserCacheFiles_shouldReturnTwoCacheEntries() {
-        ResponseEntity<UserInfoDto> userCreationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
-        ResponseEntity<GameInfoDto> gameCreationResponse = postGame(SAMPLE_GAME_CREATE_DTO_APEX);
+        ResponseEntity<UserInfoDto> userCreationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        ResponseEntity<GameInfoDto> gameCreationResponse = requestUtils.postGame(SAMPLE_GAME_CREATE_DTO_APEX);
         assertThat(userCreationResponse.getBody()).isNotNull();
         assertThat(gameCreationResponse.getBody()).isNotNull();
         long userId = userCreationResponse.getBody().getId();
@@ -202,10 +142,10 @@ class UserControllerIntegrationTest {
                 .gameId(gameId)
                 .build();
 
-        postCacheFile(cacheFileUploadDto, SAMPLE_APEX_CACHE_FILE_1_RESOURCE);
-        postCacheFile(cacheFileUploadDto, SAMPLE_APEX_CACHE_FILE_2_RESOURCE);
+        requestUtils.postCacheFile(cacheFileUploadDto, SAMPLE_APEX_CACHE_FILE_1_RESOURCE);
+        requestUtils.postCacheFile(cacheFileUploadDto, SAMPLE_APEX_CACHE_FILE_2_RESOURCE);
 
-        ResponseEntity<CacheFileInfoDto[]> cacheFilesListResponse = getAllCacheFilesByUserId(userId);
+        ResponseEntity<CacheFileInfoDto[]> cacheFilesListResponse = requestUtils.getAllCacheFilesByUserId(userId);
         assertThat(cacheFilesListResponse).isNotNull();
         assertThat(cacheFilesListResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(cacheFilesListResponse.getBody()).isNotNull().hasSize(2);
@@ -213,7 +153,7 @@ class UserControllerIntegrationTest {
 
     @Test
     void oneUserStored_updateUser_getUser_shouldReturnUpdatedUser() {
-        ResponseEntity<UserInfoDto> userCreationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        ResponseEntity<UserInfoDto> userCreationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(userCreationResponse.getBody()).isNotNull();
         long userId = userCreationResponse.getBody().getId();
 
@@ -222,9 +162,9 @@ class UserControllerIntegrationTest {
                 .password("extraStrongPassword")
                 .email("claus@holzhoff.co")
                 .build();
-        updateUser(userId, userUpdateDto);
+        requestUtils.updateUser(userId, userUpdateDto);
 
-        ResponseEntity<UserInfoDto> getUserResponse = getUserById(userId);
+        ResponseEntity<UserInfoDto> getUserResponse = requestUtils.getUserById(userId);
         assertThat(getUserResponse).isNotNull();
         UserInfoDto userInfoDto = getUserResponse.getBody();
         assertThat(userInfoDto).isNotNull();
@@ -234,10 +174,10 @@ class UserControllerIntegrationTest {
 
     @Test
     void oneUserStored_updateUserProfilePicture_getUserProfilePicture_shouldHaveCorrectFileLength() {
-        ResponseEntity<UserInfoDto> userCreationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        ResponseEntity<UserInfoDto> userCreationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(userCreationResponse.getBody()).isNotNull();
         long userId = userCreationResponse.getBody().getId();
-        updateUserProfilePicture(userId, PROFILE_PIC_2_RESOURCE);
+        requestUtils.updateUserProfilePicture(userId, PROFILE_PIC_2_RESOURCE);
 
         RequestCallback requestCallback = request -> request.getHeaders()
                 .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
@@ -263,12 +203,12 @@ class UserControllerIntegrationTest {
 
     @Test
     void oneUserStored_deleteUser_getAllUsers_shouldReturnEmptyArray() {
-        ResponseEntity<UserInfoDto> userCreationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        ResponseEntity<UserInfoDto> userCreationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(userCreationResponse.getBody()).isNotNull();
         long userId = userCreationResponse.getBody().getId();
-        deleteUser(userId);
+        requestUtils.deleteUser(userId);
 
-        ResponseEntity<UserInfoDto[]> allUsersResponse = getAllUsers();
+        ResponseEntity<UserInfoDto[]> allUsersResponse = requestUtils.getAllUsers();
         assertThat(allUsersResponse).isNotNull();
         assertThat(allUsersResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(allUsersResponse.getBody()).isNotNull().isEmpty();
@@ -276,20 +216,20 @@ class UserControllerIntegrationTest {
 
     @Test
     void twoUsersStored_deleteFirstUser_getFirstUser_shouldReturn404NotFound_getSecondUser_shouldReturnSecondUser() {
-        ResponseEntity<UserInfoDto> user1CreationResponse = postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
-        ResponseEntity<UserInfoDto> user2CreationResponse = postUser(SAMPLE_USER_CREATE_DTO_2, PROFILE_PIC_2_RESOURCE);
+        ResponseEntity<UserInfoDto> user1CreationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
+        ResponseEntity<UserInfoDto> user2CreationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_2, PROFILE_PIC_2_RESOURCE);
         assertThat(user1CreationResponse.getBody()).isNotNull();
         assertThat(user2CreationResponse.getBody()).isNotNull();
         long user1Id = user1CreationResponse.getBody().getId();
         long user2Id = user2CreationResponse.getBody().getId();
 
-        deleteUser(user1Id);
+        requestUtils.deleteUser(user1Id);
 
-        ResponseEntity<UserInfoDto> firstUserResponse = getUserById(user1Id);
+        ResponseEntity<UserInfoDto> firstUserResponse = requestUtils.getUserById(user1Id);
         assertThat(firstUserResponse).isNotNull();
         assertThat(firstUserResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
-        ResponseEntity<UserInfoDto> secondUserResponse = getUserById(user2Id);
+        ResponseEntity<UserInfoDto> secondUserResponse = requestUtils.getUserById(user2Id);
         assertThat(secondUserResponse).isNotNull();
         assertThat(secondUserResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(secondUserResponse.getBody()).isEqualTo(user2CreationResponse.getBody());
