@@ -1,25 +1,20 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.integrationtest;
 
-import com.dxvkstatecachebank.dxvkstatecachebank.data.TestDataCreator;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.*;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
 import com.dxvkstatecachebank.dxvkstatecachebank.util.RequestUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 
@@ -49,9 +44,6 @@ class UserControllerIntegrationTest {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private TestDataCreator testDataCreator;
 
     @Test
     void emptyDatabase_getAllUsers_shouldReturnEmptyArray() {
@@ -110,17 +102,22 @@ class UserControllerIntegrationTest {
                 .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
 
         ResponseExtractor<Void> responseExtractor = response -> {
-            InputStream in = response.getBody();
+            final long correctContentLength = PROFILE_PIC_1_RESOURCE.contentLength();
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            // Assert that content length header is correct
+            assertThat(response.getHeaders().getContentLength()).isEqualTo(correctContentLength);
+            InputStream inputStream = response.getBody();
+
             // Count the bytes received from the server
-            long bytesReceived = 0L;
-            while (in.available() > 0) {
-                int available = in.available();
-                in.skipNBytes(available);
-                bytesReceived += available;
+            long sumOfBytesReceived = 0L;
+            int bytesReceived;
+            var readBuffer = new byte[4096];
+            while ((bytesReceived = inputStream.read(readBuffer)) != -1) {
+                sumOfBytesReceived += bytesReceived;
             }
 
             // Assert the length of the picture we got back
-            assertThat(bytesReceived).isEqualTo(PROFILE_PIC_1_RESOURCE.contentLength());
+            assertThat(bytesReceived).isEqualTo(correctContentLength);
             return null;
         };
 
@@ -183,17 +180,22 @@ class UserControllerIntegrationTest {
                 .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
 
         ResponseExtractor<Void> responseExtractor = response -> {
-            InputStream in = response.getBody();
+            final long correctContentLength = PROFILE_PIC_2_RESOURCE.contentLength();
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            // Assert that content length header is correct
+            assertThat(response.getHeaders().getContentLength()).isEqualTo(correctContentLength);
+            InputStream inputStream = response.getBody();
+
             // Count the bytes received from the server
-            long bytesReceived = 0L;
-            while (in.available() > 0) {
-                int available = in.available();
-                in.skipNBytes(available);
-                bytesReceived += available;
+            long sumOfBytesReceived = 0L;
+            int bytesReceived;
+            var readBuffer = new byte[4096];
+            while ((bytesReceived = inputStream.read(readBuffer)) != -1) {
+                sumOfBytesReceived += bytesReceived;
             }
 
-            // Assert the length of the picture we got back
-            assertThat(bytesReceived).isEqualTo(PROFILE_PIC_2_RESOURCE.contentLength());
+            // Assert the real length of the cache file we got back
+            assertThat(sumOfBytesReceived).isEqualTo(correctContentLength);
             return null;
         };
 
