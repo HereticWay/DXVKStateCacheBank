@@ -117,7 +117,7 @@ class UserControllerIntegrationTest {
             }
 
             // Assert the length of the picture we got back
-            assertThat(bytesReceived).isEqualTo(correctContentLength);
+            assertThat(sumOfBytesReceived).isEqualTo(correctContentLength);
             return null;
         };
 
