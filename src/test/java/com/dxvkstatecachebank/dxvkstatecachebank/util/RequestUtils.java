@@ -1,11 +1,9 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.util;
 
-import com.dxvkstatecachebank.dxvkstatecachebank.data.TestDataCreator;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.*;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -24,15 +22,12 @@ public class RequestUtils {
     private final CacheFileService cacheFileService;
     private final GameService gameService;
     private final UserService userService;
-    private final TestDataCreator testDataCreator;
 
-    @Autowired
-    public RequestUtils(TestRestTemplate restTemplate, CacheFileService cacheFileService, GameService gameService, UserService userService, TestDataCreator testDataCreator) {
+    public RequestUtils(TestRestTemplate restTemplate, CacheFileService cacheFileService, GameService gameService, UserService userService) {
         this.restTemplate = restTemplate;
         this.cacheFileService = cacheFileService;
         this.gameService = gameService;
         this.userService = userService;
-        this.testDataCreator = testDataCreator;
     }
 
     public ResponseEntity<UserInfoDto> getUserById(Long userId) {
@@ -47,6 +42,11 @@ public class RequestUtils {
     public ResponseEntity<CacheFileInfoDto[]> getAllCacheFilesByUserId(long userId) {
         String url = "%s/%d/cache_files".formatted(USER_ENDPOINT_URL, userId);
         return restTemplate.getForEntity(url, CacheFileInfoDto[].class);
+    }
+
+    public ResponseEntity<CacheFileInfoDto> getCacheFile(Long cacheFileId) {
+        String url = "%s/%d".formatted(CACHE_FILE_ENDPOINT_URL, cacheFileId);
+        return restTemplate.getForEntity(url, CacheFileInfoDto.class);
     }
 
     public ResponseEntity<UserInfoDto> postUser(UserCreateDto userCreateDto, Resource profilePictureResource) {
@@ -97,6 +97,11 @@ public class RequestUtils {
 
     public void deleteUser(long userId) {
         String url = "%s/%d".formatted(USER_ENDPOINT_URL, userId);
+        restTemplate.delete(url);
+    }
+
+    public void deleteCacheFile(long cacheFileId) {
+        String url = "%s/%d".formatted(CACHE_FILE_ENDPOINT_URL, cacheFileId);
         restTemplate.delete(url);
     }
 }
