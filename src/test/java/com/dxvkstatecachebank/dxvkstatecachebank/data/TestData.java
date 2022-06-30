@@ -2,6 +2,7 @@ package com.dxvkstatecachebank.dxvkstatecachebank.data;
 
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.GameCreateDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserCreateDto;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 
 public class TestData {
@@ -33,7 +34,15 @@ public class TestData {
 
     public static final ClassPathResource SAMPLE_APEX_CACHE_FILE_1_RESOURCE = new ClassPathResource("sample/r5apex-barely-populated.dxvk-cache");
     public static final ClassPathResource SAMPLE_APEX_CACHE_FILE_2_RESOURCE = new ClassPathResource("sample/r5apex-highly-populated.dxvk-cache");
-    public static final ClassPathResource SAMPLE_OVERWATCH_CACHE_FILE_1_RESOURCE = new ClassPathResource("sample/overwatch.dxvk-cache");
+    public static final ClassPathResource SAMPLE_OVERWATCH_CACHE_FILE_1_RESOURCE = new ClassPathResource("sample/Overwatch.dxvk-cache");
+
+    public static final ByteArrayResource SAMPLE_INVALID_CACHE_FILE_RESOURCE = new ByteArrayResource(new byte[]{0x12, 0xF, 0xA, 0x4, -1}) {
+        // I must override this to be able to post as multipart file
+        @Override
+        public String getFilename() {
+            return "invalid-cache.dxvk-cache";
+        }
+    };
 
     public static final ClassPathResource PROFILE_PIC_1_RESOURCE = new ClassPathResource("sample/profile_pic_1.jpg");
     public static final ClassPathResource PROFILE_PIC_2_RESOURCE = new ClassPathResource("sample/profile_pic_2.jpg");
