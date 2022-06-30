@@ -98,45 +98,17 @@ public class CacheFileService {
         return Files.newInputStream(filePath);
     }
 
-    private void deleteTemporaryFile(Path temporaryFilePath) {
-        if (!temporaryFilePath.toFile().delete()) {
-            log.error("Temporary file {} couldn't be deleted!", temporaryFilePath);
-        }
-    }
-
     @Transactional
     public CacheFile mergeCacheFileToIncrementalCacheAndSave(CacheFileUploadDto cacheFileUploadDto, InputStream mergeableCacheFileInputStream, Long mergeableCacheFileSize) throws IOException, SQLException, UnsuccessfulCacheMergeException, NoNewCacheEntryException {
         Game game = gameService.findById(cacheFileUploadDto.getGameId())
                 .orElseThrow();
 
-        // If we don't have incremental cache yet, then merging is not required
-        if (game.getIncrementalCacheFile() == null || mergeableCacheFileSize == 0) {
-            //TODO: optimize this to not use temp file to be able to read twice the same input
-            //      (the problem is that you can't read twice from an input stream because you drain it but you can
-            //       create two input streams for a temporary file, that's a workaround I used here for now)
-            Path tempFilePath = Files.createTempFile(tempDirectoryPath, "CacheStore", ".dxvk-cache");
-            try {
-                writeStreamToFile(mergeableCacheFileInputStream, tempFilePath);
-
-                CacheFile cacheFile = cacheFileMapper.toCacheFile(cacheFileUploadDto, readFileToInputStream(tempFilePath), mergeableCacheFileSize);
-                cacheFile = cacheFileRepository.save(cacheFile);
-                Blob cacheFileData = findById(cacheFile.getId())
-                        .orElseThrow()
-                        .getData();
-
-                game.setIncrementalCacheFile(BlobProxy.generateProxy(readFileToInputStream(tempFilePath), cacheFileData.length()));
-                game.setIncrementalCacheLastModified(LocalDateTime.now());
-                gameService.save(game);
-
-                return cacheFile;
-            } finally {
-                tempFilePath.toFile().delete();
-            }
-        }
-
+        boolean incrementalCacheExists = game.getIncrementalCacheFile() != null && mergeableCacheFileSize > 0;
         // If we have incremental cache then merging is required
         Path incrementalCacheFilePath = Files.createTempFile(tempDirectoryPath, "IncrementalCache", ".dxvk-cache");
-        writeBlobToFile(game.getIncrementalCacheFile(), incrementalCacheFilePath);
+        if (incrementalCacheExists) {
+            writeBlobToFile(game.getIncrementalCacheFile(), incrementalCacheFilePath);
+        }
 
         Path mergeableCacheFilePath = Files.createTempFile(tempDirectoryPath, "MergeableCache", ".dxvk-cache");
         writeStreamToFile(mergeableCacheFileInputStream, mergeableCacheFilePath);
@@ -144,7 +116,12 @@ public class CacheFileService {
         Path outputCacheFilePath = Files.createTempFile(tempDirectoryPath, "MergedCacheOutput", ".dxvk-cache");
 
         try {
-            MergeResultDto mergeResult = dxvkCacheToolRunner.run(incrementalCacheFilePath, mergeableCacheFilePath, outputCacheFilePath);
+            MergeResultDto mergeResult;
+            if (incrementalCacheExists) {
+                mergeResult = dxvkCacheToolRunner.run(incrementalCacheFilePath, mergeableCacheFilePath, outputCacheFilePath);
+            } else {
+                mergeResult = dxvkCacheToolRunner.run(mergeableCacheFilePath, outputCacheFilePath);
+            }
 
             if (!mergeResult.isSuccess()) {
                 throw new UnsuccessfulCacheMergeException();
@@ -167,9 +144,9 @@ public class CacheFileService {
             return save(cacheFileToMerge);
         } finally {
             // Cleanup
-            deleteTemporaryFile(incrementalCacheFilePath);
-            deleteTemporaryFile(mergeableCacheFilePath);
-            deleteTemporaryFile(outputCacheFilePath);
+            Files.deleteIfExists(incrementalCacheFilePath);
+            Files.deleteIfExists(mergeableCacheFilePath);
+            Files.deleteIfExists(outputCacheFilePath);
         }
     }
 
