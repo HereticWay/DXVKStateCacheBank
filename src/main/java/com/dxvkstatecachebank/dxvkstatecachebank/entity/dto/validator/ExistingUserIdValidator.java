@@ -19,6 +19,9 @@ public class ExistingUserIdValidator implements ConstraintValidator<ExistingUser
 
     @Override
     public boolean isValid(Long value, ConstraintValidatorContext context) {
+        if(value == null)
+            return false;
+
         return userService.existsById(value);
     }
 }
