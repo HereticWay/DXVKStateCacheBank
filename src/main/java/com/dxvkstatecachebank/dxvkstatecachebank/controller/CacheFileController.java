@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
@@ -102,10 +103,8 @@ public class CacheFileController {
             // TODO: Return more descriptive error messages here
             return ResponseEntity.unprocessableEntity()
                     .build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError()
-                    .build();
+        } catch (IOException | SQLException e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 
