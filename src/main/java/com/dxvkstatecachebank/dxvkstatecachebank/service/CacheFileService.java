@@ -134,6 +134,7 @@ public class CacheFileService {
             // Read the merge result to Game::incrementalCacheFile
             Blob resultCacheFile = readFileToBlob(outputCacheFilePath);
             game.setIncrementalCacheFile(resultCacheFile);
+            game.setIncrementalCacheLastModified(LocalDateTime.now());
             // Save it
             gameService.save(game);
 
