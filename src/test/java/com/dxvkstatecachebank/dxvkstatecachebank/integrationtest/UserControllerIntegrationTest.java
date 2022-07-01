@@ -137,7 +137,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
-    void addOneUser_addOneGame_addTwoCacheFiles_listUserCacheFiles_shouldReturnTwoCacheEntries() {
+    void addTwoCacheFiles_listUserCacheFiles_shouldReturnTwoCacheEntries() {
         ResponseEntity<UserInfoDto> userCreationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         ResponseEntity<GameInfoDto> gameCreationResponse = requestUtils.postGame(SAMPLE_GAME_CREATE_DTO_APEX);
         assertThat(userCreationResponse.getBody()).isNotNull();

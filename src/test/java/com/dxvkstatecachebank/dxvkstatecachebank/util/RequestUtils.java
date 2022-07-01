@@ -35,8 +35,17 @@ public class RequestUtils {
         return restTemplate.getForEntity(url, UserInfoDto.class);
     }
 
+    public ResponseEntity<GameInfoDto> getGameById(long gameId) {
+        String url = "%s/%d".formatted(GAME_ENDPOINT_URL, gameId);
+        return restTemplate.getForEntity(url, GameInfoDto.class);
+    }
+
     public ResponseEntity<UserInfoDto[]> getAllUsers() {
         return restTemplate.getForEntity(USER_ENDPOINT_URL, UserInfoDto[].class);
+    }
+
+    public ResponseEntity<GameInfoDto[]> getAllGames() {
+        return restTemplate.getForEntity(GAME_ENDPOINT_URL, GameInfoDto[].class);
     }
 
     public ResponseEntity<CacheFileInfoDto[]> getAllCacheFilesByUserId(long userId) {
