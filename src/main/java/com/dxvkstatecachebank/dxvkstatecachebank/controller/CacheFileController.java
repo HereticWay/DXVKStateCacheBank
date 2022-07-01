@@ -9,9 +9,8 @@ import com.dxvkstatecachebank.dxvkstatecachebank.exceptions.NoNewCacheEntryExcep
 import com.dxvkstatecachebank.dxvkstatecachebank.exceptions.UnsuccessfulCacheMergeException;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -20,6 +19,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
@@ -56,10 +56,11 @@ public class CacheFileController {
 
     @Transactional
     @GetMapping("/{cacheFileId}/data")
-    public ResponseEntity<Resource> getCacheFileData(@PathVariable("cacheFileId") Long cacheFileId) throws SQLException {
+    public void getCacheFileData(@PathVariable("cacheFileId") Long cacheFileId, HttpServletResponse response) throws SQLException, IOException {
         Optional<CacheFile> cacheFileFound = cacheFileService.findById(cacheFileId);
         if (cacheFileFound.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
         }
 
         CacheFile cacheFile = cacheFileFound.get();
@@ -74,14 +75,11 @@ public class CacheFileController {
                         .build()
         );
 
-        InputStreamResource inputStreamResource = new InputStreamResource(cacheFileBlob.getBinaryStream());
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentLength(cacheFileBlob.length())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .lastModified(cacheFile.getUploadDateTime().toInstant(ZoneOffset.UTC))
-                .body(inputStreamResource);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cacheFileName + "\"");
+        response.setContentLengthLong(cacheFileBlob.length());
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        response.setHeader(HttpHeaders.LAST_MODIFIED, cacheFile.getUploadDateTime().toInstant(ZoneOffset.UTC).toString());
+        IOUtils.copyLarge(cacheFileBlob.getBinaryStream(), response.getOutputStream());
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
