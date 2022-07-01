@@ -49,14 +49,8 @@ class UserControllerIntegrationTest {
     private UserService userService;
 
     @BeforeEach
+    @AfterEach
     void cleanupBeforeEach() {
-        cacheFileService.deleteAll();
-        gameService.deleteAll();
-        userService.deleteAll();
-    }
-
-    @AfterAll
-    void cleanupAfter() {
         cacheFileService.deleteAll();
         gameService.deleteAll();
         userService.deleteAll();

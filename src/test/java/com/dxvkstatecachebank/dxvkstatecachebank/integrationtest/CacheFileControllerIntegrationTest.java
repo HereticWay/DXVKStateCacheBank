@@ -53,14 +53,8 @@ class CacheFileControllerIntegrationTest {
     private RequestUtils requestUtils;
 
     @BeforeEach
+    @AfterEach
     void cleanup() {
-        cacheFileService.deleteAll();
-        gameService.deleteAll();
-        userService.deleteAll();
-    }
-
-    @AfterAll
-    void cleanupAfter() {
         cacheFileService.deleteAll();
         gameService.deleteAll();
         userService.deleteAll();
