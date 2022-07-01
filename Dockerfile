@@ -17,4 +17,4 @@ COPY --from=builder /Sources/target/*.jar /App/app.jar
 WORKDIR /App
 
 EXPOSE 8080
-CMD java -jar app.jar
+CMD java -jar app.jar --spring.profiles.active=prod
