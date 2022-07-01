@@ -1,4 +1,4 @@
-FROM maven:3.8.6-openjdk-18-slim AS builder
+FROM maven:3.8.6-eclipse-temurin-17-alpine AS builder
 COPY ./pom.xml /Sources/
 WORKDIR /Sources
 RUN mvn dependency:go-offline
@@ -7,7 +7,7 @@ COPY ./src/ /Sources/src/
 RUN mvn package -DskipTests
 
 
-FROM openjdk:18-alpine3.15
+FROM eclipse-temurin:17.0.3_7-jre-alpine
 
 # Get DXVK Cache Tool and make it executable
 ADD https://github.com/DarkTigrus/dxvk-cache-tool/releases/download/v1.1.2/dxvk-cache-tool /bin/dxvk-cache-tool
