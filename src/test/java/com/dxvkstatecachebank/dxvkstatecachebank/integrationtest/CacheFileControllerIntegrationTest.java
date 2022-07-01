@@ -6,6 +6,9 @@ import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
 import com.dxvkstatecachebank.dxvkstatecachebank.util.RequestUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +52,19 @@ class CacheFileControllerIntegrationTest {
     @Autowired
     private RequestUtils requestUtils;
 
-    private final String URL = "/cache_file";
+    @BeforeEach
+    void cleanup() {
+        cacheFileService.deleteAll();
+        gameService.deleteAll();
+        userService.deleteAll();
+    }
+
+    @AfterAll
+    void cleanupAfter() {
+        cacheFileService.deleteAll();
+        gameService.deleteAll();
+        userService.deleteAll();
+    }
 
     @Test
     void emptyDatabase_getCacheFileByRandomId_shouldReturn404NotFound() {

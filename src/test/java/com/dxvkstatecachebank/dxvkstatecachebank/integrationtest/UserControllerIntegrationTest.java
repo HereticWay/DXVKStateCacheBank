@@ -6,6 +6,9 @@ import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
 import com.dxvkstatecachebank.dxvkstatecachebank.util.RequestUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +47,20 @@ class UserControllerIntegrationTest {
 
     @Autowired
     private UserService userService;
+
+    @BeforeEach
+    void cleanupBeforeEach() {
+        cacheFileService.deleteAll();
+        gameService.deleteAll();
+        userService.deleteAll();
+    }
+
+    @AfterAll
+    void cleanupAfter() {
+        cacheFileService.deleteAll();
+        gameService.deleteAll();
+        userService.deleteAll();
+    }
 
     @Test
     void emptyDatabase_getAllUsers_shouldReturnEmptyArray() {
