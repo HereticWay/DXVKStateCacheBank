@@ -50,29 +50,31 @@ public class GameController {
     @GetMapping
     public List<GameInfoDto> listAllGames() {
         return gameService.findAll().stream()
-                .map(game -> gameMapper.toDto(game))
+                .map(gameMapper::toDto)
                 .toList();
     }
 
     @GetMapping("/{gameId}")
     public ResponseEntity<GameInfoDto> findGameById(@PathVariable("gameId") Long gameId) {
-        Optional<Game> gameFound = gameService.findById(gameId);
-        if (gameFound.isEmpty()) {
+        if (!gameService.existsById(gameId)) {
+            log.error("Game id: {} could not be found", gameId);
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(gameMapper.toDto(gameFound.get()));
+        Game game = gameService.findById(gameId)
+                .orElseThrow();
+        return ResponseEntity.ok(gameMapper.toDto(game));
     }
 
     @GetMapping("/{gameId}/incremental_cache_file")
     public ResponseEntity<Resource> getLatestIncrementalCacheFile(@PathVariable("gameId") Long gameId) throws SQLException {
-        Optional<Game> gameFound = gameService.findById(gameId);
-        if (gameFound.isEmpty()) {
-            // TODO: Return more descriptive error messages here
+        if (!gameService.existsById(gameId)) {
+            log.error("Game id: {} could not be found", gameId);
             return ResponseEntity.notFound().build();
         }
 
-        Game game = gameFound.get();
+        Game game = gameService.findById(gameId)
+                .orElseThrow();
         Blob cacheFileBlob = game.getIncrementalCacheFile();
         if (cacheFileBlob == null || cacheFileBlob.length() == 0) {
             return ResponseEntity.notFound().build();
@@ -98,18 +100,24 @@ public class GameController {
     }
 
     @GetMapping("/{gameId}/cache_files")
-    public List<CacheFileInfoDto> listCacheFilesForGameId(@PathVariable("gameId") Long gameId) {
-        return cacheFileService.findAllByGameId(gameId).stream()
-                .map(cacheFile -> cacheFileMapper.toDto(cacheFile))
-                .toList();
+    public ResponseEntity<List<CacheFileInfoDto>> listCacheFilesForGameId(@PathVariable("gameId") Long gameId) {
+        if(!gameService.existsById(gameId)) {
+            log.error("Game id: {} could not be found", gameId);
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(
+                cacheFileService.findAllByGameId(gameId).stream()
+                        .map(cacheFileMapper::toDto)
+                        .toList()
+        );
     }
 
     @PostMapping
     public ResponseEntity<GameInfoDto> createGame(@Valid @RequestBody GameCreateDto gameCreateDto, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            log.error(bindingResult.getAllErrors().toString());
-
-            // TODO: Return more descriptive error messages here
+        if(bindingResult.hasErrors()) {
+            log.error("Validation error:");
+            bindingResult.getAllErrors().forEach(err -> log.error(err.getDefaultMessage()));
             return ResponseEntity.unprocessableEntity().build();
         }
 
@@ -119,14 +127,15 @@ public class GameController {
 
     @PutMapping("/{gameId}")
     public ResponseEntity<GameInfoDto> updateGame(@PathVariable("gameId") Long gameId, @Valid @RequestBody GameUpdateDto gameUpdateDto, BindingResult bindingResult) {
-        if(bindingResult.hasErrors()) {
-            log.error("Validation error!");
-            bindingResult.getAllErrors().forEach(err -> log.error(err.getDefaultMessage()));
-            return ResponseEntity.badRequest().build();
-        }
         if(!gameService.existsById(gameId)) {
-            log.error("Game id doesn't exists: {}", gameId);
-            return ResponseEntity.badRequest().build();
+            log.error("Game id: {} could not be found", gameId);
+            return ResponseEntity.notFound().build();
+        }
+
+        if(bindingResult.hasErrors()) {
+            log.error("Validation error:");
+            bindingResult.getAllErrors().forEach(err -> log.error(err.getDefaultMessage()));
+            return ResponseEntity.unprocessableEntity().build();
         }
 
         Game game = gameService.findById(gameId)
@@ -138,7 +147,12 @@ public class GameController {
     }
 
     @DeleteMapping("/{gameId}")
-    public void deleteGame(@PathVariable("gameId") Long gameId) {
+    public ResponseEntity<Void> deleteGame(@PathVariable("gameId") Long gameId) {
+        if(!gameService.existsById(gameId)) {
+            return ResponseEntity.notFound().build();
+        }
+
         gameService.deleteById(gameId);
+        return ResponseEntity.ok().build();
     }
 }

@@ -48,32 +48,34 @@ public class UserController {
     @GetMapping
     public List<UserInfoDto> listAllUsers() {
         return userService.findAll().stream()
-                .map(user -> userMapper.toDto(user))
+                .map(userMapper::toDto)
                 .toList();
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserInfoDto> findUserById(@PathVariable("userId") Long userId) {
-        Optional<User> userFound = userService.findById(userId);
-        if (userFound.isEmpty()) {
+        if (!userService.existsById(userId)) {
+            log.error("User id: {} could not be found", userId);
             return ResponseEntity.notFound()
                     .build();
         }
 
-        User user = userFound.get();
+        User user = userService.findById(userId)
+                .orElseThrow();
         return ResponseEntity.ok(userMapper.toDto(user));
     }
 
     @Transactional
     @GetMapping("/{userId}/profile_picture")
     public void getProfilePictureByUserId(@PathVariable("userId") Long userId, HttpServletResponse response) throws SQLException, IOException {
-        Optional<User> userFound = userService.findById(userId);
-        if (userFound.isEmpty()) {
+        if (!userService.existsById(userId)) {
+            log.error("User id: {} could not be found", userId);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        User user = userFound.get();
+        User user = userService.findById(userId)
+                .orElseThrow();
         Blob profilePictureBlob = user.getProfilePicture();
 
         response.setContentType(MediaType.IMAGE_PNG_VALUE);
@@ -82,17 +84,26 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/cache_files")
-    public List<CacheFileInfoDto> findCacheFileByUserId(@PathVariable("userId") Long userId) {
-        return cacheFileService.findAllByUploaderId(userId).stream()
-                .map(cacheFileMapper::toDto)
-                .toList();
+    public ResponseEntity<List<CacheFileInfoDto>> findCacheFileByUserId(@PathVariable("userId") Long userId) {
+        if (!userService.existsById(userId)) {
+            log.error("User id: {} could not be found", userId);
+            return ResponseEntity.notFound()
+                    .build();
+        }
+
+        return ResponseEntity.ok(
+                cacheFileService.findAllByUploaderId(userId)
+                        .stream().
+                        map(cacheFileMapper::toDto)
+                        .toList()
+        );
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserInfoDto> createUser(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("userCreateDto") UserCreateDto userCreateDto, BindingResult bindingResult) throws IOException {
         if (bindingResult.hasErrors()) {
-            log.error(bindingResult.getAllErrors().toString());
-            // TODO: Return more descriptive error messages here
+            log.error("Validation error:");
+            bindingResult.getAllErrors().forEach(error -> log.error(error.getDefaultMessage()));
             return ResponseEntity.unprocessableEntity().build();
         }
 
@@ -102,14 +113,15 @@ public class UserController {
 
     @PutMapping("/{userId}")
     public ResponseEntity<UserInfoDto> updateUser(@PathVariable("userId") Long userId, @Valid @RequestBody UserUpdateDto userUpdateDto, BindingResult bindingResult) {
-        if(bindingResult.hasErrors()) {
-            log.error("Validation error!");
-            bindingResult.getAllErrors().forEach(err -> log.error(err.getDefaultMessage()));
-            return ResponseEntity.badRequest().build();
-        }
         if(!userService.existsById(userId)) {
-            log.error("User id doesn't exists: {}", userId);
-            return ResponseEntity.badRequest().build();
+            log.error("User id: {} could not be found", userId);
+            return ResponseEntity.notFound().build();
+        }
+
+        if(bindingResult.hasErrors()) {
+            log.error("Validation error:");
+            bindingResult.getAllErrors().forEach(err -> log.error(err.getDefaultMessage()));
+            return ResponseEntity.unprocessableEntity().build();
         }
 
         User user = userService.findById(userId)
@@ -123,7 +135,8 @@ public class UserController {
     @PutMapping(value = "/{userId}/profile_picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserInfoDto> updateUserProfilePicture(@PathVariable("userId") Long userId, @RequestPart("file") MultipartFile multipartFile) throws IOException {
         if(!userService.existsById(userId)) {
-            return ResponseEntity.badRequest().build();
+            log.error("User id: {} could not be found", userId);
+            return ResponseEntity.notFound().build();
         }
 
         User user = userService.findById(userId)
@@ -133,7 +146,13 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable("userId") Long userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable("userId") Long userId) {
+        if(!userService.existsById(userId)) {
+            log.error("User id: {} could not be found", userId);
+            return ResponseEntity.notFound().build();
+        }
+
         userService.deleteById(userId);
+        return ResponseEntity.ok().build();
     }
 }

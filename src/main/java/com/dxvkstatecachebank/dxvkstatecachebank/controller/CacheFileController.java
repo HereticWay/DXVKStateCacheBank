@@ -45,35 +45,32 @@ public class CacheFileController {
 
     @GetMapping("/{cacheFileId}")
     public ResponseEntity<CacheFileInfoDto> findCacheFileById(@PathVariable("cacheFileId") Long cacheFileId) {
-        Optional<CacheFile> cacheFileFound = cacheFileService.findById(cacheFileId);
-        if (cacheFileFound.isEmpty()) {
+        if (!cacheFileService.existsById(cacheFileId)) {
+            log.error("Cache file id: {} could not be found", cacheFileId);
             return ResponseEntity.notFound().build();
         }
 
-        CacheFile cacheFile = cacheFileFound.get();
+        CacheFile cacheFile = cacheFileService.findById(cacheFileId)
+                .orElseThrow();
+
         return ResponseEntity.ok(cacheFileMapper.toDto(cacheFile));
     }
 
     @Transactional
     @GetMapping("/{cacheFileId}/data")
     public void getCacheFileData(@PathVariable("cacheFileId") Long cacheFileId, HttpServletResponse response) throws SQLException, IOException {
-        Optional<CacheFile> cacheFileFound = cacheFileService.findById(cacheFileId);
-        if (cacheFileFound.isEmpty()) {
+        if (!cacheFileService.existsById(cacheFileId)) {
+            log.error("Cache file id: {} could not be found", cacheFileId);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        CacheFile cacheFile = cacheFileFound.get();
+        CacheFile cacheFile = cacheFileService.findById(cacheFileId)
+                .orElseThrow();
+
         Blob cacheFileBlob = cacheFile.getData();
         Game game = cacheFile.getGame();
         String cacheFileName = "%s.dxvk-cache".formatted(game.getCacheFileName());
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentDisposition(
-                ContentDisposition.attachment()
-                        .filename(cacheFileName)
-                        .build()
-        );
 
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cacheFileName + "\"");
         response.setContentLengthLong(cacheFileBlob.length());
@@ -84,11 +81,10 @@ public class CacheFileController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CacheFileInfoDto> uploadCacheFile(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("cacheFileUploadDto") CacheFileUploadDto cacheFileUploadDto, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            log.error(bindingResult.getAllErrors().toString());
-            // TODO: Return more descriptive error messages here
-            return ResponseEntity.unprocessableEntity()
-                    .build();
+        if(bindingResult.hasErrors()) {
+            log.error("Validation error:");
+            bindingResult.getAllErrors().forEach(err -> log.error(err.getDefaultMessage()));
+            return ResponseEntity.unprocessableEntity().build();
         }
 
         try {
@@ -107,7 +103,13 @@ public class CacheFileController {
     }
 
     @DeleteMapping("/{cacheFileId}")
-    public void deleteCacheFile(@PathVariable("cacheFileId") Long cacheFileId) {
+    public ResponseEntity<Void> deleteCacheFile(@PathVariable("cacheFileId") Long cacheFileId) {
+        if(!cacheFileService.existsById(cacheFileId)) {
+            log.error("Cache file id: {} could not be found", cacheFileId);
+            return ResponseEntity.notFound().build();
+        }
+
         cacheFileService.deleteById(cacheFileId);
+        return ResponseEntity.ok().build();
     }
 }
