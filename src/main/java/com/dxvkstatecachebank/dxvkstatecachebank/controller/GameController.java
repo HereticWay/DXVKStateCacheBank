@@ -80,16 +80,15 @@ public class GameController {
         InputStreamResource cacheFileStreamResource;
         long cacheFileLength;
         try {
+            if(cacheFileBlob == null || (cacheFileLength = cacheFileBlob.length()) == 0) {
+                log.error("There's no incremental cache for the following game id {}", gameId);
+                return ResponseEntity.notFound().build();
+            }
             cacheFileStreamResource = new InputStreamResource(cacheFileBlob.getBinaryStream());
-            cacheFileLength = cacheFileBlob.length();
         } catch (SQLException e) {
             log.error("Some unexpected error occurred!");
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
-        }
-
-        if (cacheFileLength == 0) {
-            return ResponseEntity.notFound().build();
         }
 
         String cacheFileName = "%s.dxvk-cache".formatted(game.getCacheFileName());
