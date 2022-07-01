@@ -10,16 +10,17 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.UserMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.hibernate.engine.jdbc.BlobProxy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.sql.Blob;
@@ -63,23 +64,21 @@ public class UserController {
         return ResponseEntity.ok(userMapper.toDto(user));
     }
 
+    @Transactional
     @GetMapping("/{userId}/profile_picture")
-    public ResponseEntity<Resource> getProfilePictureByUserId(@PathVariable("userId") Long userId) throws SQLException {
+    public void getProfilePictureByUserId(@PathVariable("userId") Long userId, HttpServletResponse response) throws SQLException, IOException {
         Optional<User> userFound = userService.findById(userId);
         if (userFound.isEmpty()) {
-            return ResponseEntity.notFound()
-                    .build();
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
         }
 
         User user = userFound.get();
         Blob profilePictureBlob = user.getProfilePicture();
 
-        InputStreamResource inputStreamResource = new InputStreamResource(profilePictureBlob.getBinaryStream());
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_PNG)
-                .contentLength(profilePictureBlob.length())
-                .body(inputStreamResource);
+        response.setContentType(MediaType.IMAGE_PNG_VALUE);
+        response.setContentLengthLong(profilePictureBlob.length());
+        IOUtils.copy(profilePictureBlob.getBinaryStream(), response.getOutputStream());
     }
 
     @GetMapping("/{userId}/cache_files")
