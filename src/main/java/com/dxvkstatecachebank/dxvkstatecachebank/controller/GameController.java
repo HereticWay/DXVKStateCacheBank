@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Positive;
@@ -67,7 +68,7 @@ public class GameController {
     }
 
     @GetMapping("/{gameId}/incremental_cache_file")
-    public ResponseEntity<Resource> getLatestIncrementalCacheFile(@PathVariable("gameId") Long gameId) throws SQLException {
+    public ResponseEntity<Resource> getLatestIncrementalCacheFile(@PathVariable("gameId") Long gameId) {
         if (!gameService.existsById(gameId)) {
             log.error("Game id: {} could not be found", gameId);
             return ResponseEntity.notFound().build();
@@ -76,7 +77,18 @@ public class GameController {
         Game game = gameService.findById(gameId)
                 .orElseThrow();
         Blob cacheFileBlob = game.getIncrementalCacheFile();
-        if (cacheFileBlob == null || cacheFileBlob.length() == 0) {
+        InputStreamResource cacheFileStreamResource;
+        long cacheFileLength;
+        try {
+            cacheFileStreamResource = new InputStreamResource(cacheFileBlob.getBinaryStream());
+            cacheFileLength = cacheFileBlob.length();
+        } catch (SQLException e) {
+            log.error("Some unexpected error occurred!");
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+
+        if (cacheFileLength == 0) {
             return ResponseEntity.notFound().build();
         }
 
@@ -89,14 +101,12 @@ public class GameController {
                         .build()
         );
 
-        InputStreamResource inputStreamResource = new InputStreamResource(cacheFileBlob.getBinaryStream());
-
         return ResponseEntity.ok()
                 .headers(headers)
-                .contentLength(cacheFileBlob.length())
+                .contentLength(cacheFileLength)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .lastModified(game.getIncrementalCacheLastModified().toInstant(ZoneOffset.UTC))
-                .body(inputStreamResource);
+                .body(cacheFileStreamResource);
     }
 
     @GetMapping("/{gameId}/cache_files")

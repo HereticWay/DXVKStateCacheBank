@@ -67,7 +67,7 @@ public class UserController {
 
     @Transactional
     @GetMapping("/{userId}/profile_picture")
-    public void getProfilePictureByUserId(@PathVariable("userId") Long userId, HttpServletResponse response) throws SQLException, IOException {
+    public void getProfilePictureByUserId(@PathVariable("userId") Long userId, HttpServletResponse response) {
         if (!userService.existsById(userId)) {
             log.error("User id: {} could not be found", userId);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -78,9 +78,15 @@ public class UserController {
                 .orElseThrow();
         Blob profilePictureBlob = user.getProfilePicture();
 
-        response.setContentType(MediaType.IMAGE_PNG_VALUE);
-        response.setContentLengthLong(profilePictureBlob.length());
-        IOUtils.copy(profilePictureBlob.getBinaryStream(), response.getOutputStream());
+        try {
+            response.setContentType(MediaType.IMAGE_PNG_VALUE);
+            response.setContentLengthLong(profilePictureBlob.length());
+            IOUtils.copy(profilePictureBlob.getBinaryStream(), response.getOutputStream());
+        } catch (SQLException | IOException e) {
+            log.error("Some unexpected error occurred!");
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/{userId}/cache_files")
@@ -100,15 +106,21 @@ public class UserController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserInfoDto> createUser(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("userCreateDto") UserCreateDto userCreateDto, BindingResult bindingResult) throws IOException {
+    public ResponseEntity<UserInfoDto> createUser(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("userCreateDto") UserCreateDto userCreateDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             log.error("Validation error:");
             bindingResult.getAllErrors().forEach(error -> log.error(error.getDefaultMessage()));
             return ResponseEntity.unprocessableEntity().build();
         }
 
-        User userCreated = userService.save(userMapper.toUser(userCreateDto, multipartFile));
-        return ResponseEntity.ok(userMapper.toDto(userCreated));
+        try {
+            User userCreated = userService.save(userMapper.toUser(userCreateDto, multipartFile));
+            return ResponseEntity.ok(userMapper.toDto(userCreated));
+        } catch (IOException e) {
+            log.error("Some unexpected error occurred!");
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @PutMapping("/{userId}")
@@ -133,16 +145,22 @@ public class UserController {
     }
 
     @PutMapping(value = "/{userId}/profile_picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserInfoDto> updateUserProfilePicture(@PathVariable("userId") Long userId, @RequestPart("file") MultipartFile multipartFile) throws IOException {
+    public ResponseEntity<UserInfoDto> updateUserProfilePicture(@PathVariable("userId") Long userId, @RequestPart("file") MultipartFile multipartFile) {
         if(!userService.existsById(userId)) {
             log.error("User id: {} could not be found", userId);
             return ResponseEntity.notFound().build();
         }
 
-        User user = userService.findById(userId)
-                .orElseThrow();
-        user.setProfilePicture(BlobProxy.generateProxy(multipartFile.getInputStream(), multipartFile.getSize()));
-        return ResponseEntity.ok(userMapper.toDto(userService.save(user)));
+        try {
+            User user = userService.findById(userId)
+                    .orElseThrow();
+            user.setProfilePicture(BlobProxy.generateProxy(multipartFile.getInputStream(), multipartFile.getSize()));
+            return ResponseEntity.ok(userMapper.toDto(userService.save(user)));
+        } catch (IOException e) {
+            log.error("Some unexpected error occurred!");
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @DeleteMapping("/{userId}")

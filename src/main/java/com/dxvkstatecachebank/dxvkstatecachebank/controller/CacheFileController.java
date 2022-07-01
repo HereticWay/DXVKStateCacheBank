@@ -11,7 +11,6 @@ import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +26,6 @@ import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.time.ZoneOffset;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/cache_file")
@@ -58,7 +56,7 @@ public class CacheFileController {
 
     @Transactional
     @GetMapping("/{cacheFileId}/data")
-    public void getCacheFileData(@PathVariable("cacheFileId") Long cacheFileId, HttpServletResponse response) throws SQLException, IOException {
+    public void getCacheFileData(@PathVariable("cacheFileId") Long cacheFileId, HttpServletResponse response) {
         if (!cacheFileService.existsById(cacheFileId)) {
             log.error("Cache file id: {} could not be found", cacheFileId);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -72,11 +70,17 @@ public class CacheFileController {
         Game game = cacheFile.getGame();
         String cacheFileName = "%s.dxvk-cache".formatted(game.getCacheFileName());
 
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cacheFileName + "\"");
-        response.setContentLengthLong(cacheFileBlob.length());
-        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        response.setHeader(HttpHeaders.LAST_MODIFIED, cacheFile.getUploadDateTime().toInstant(ZoneOffset.UTC).toString());
-        IOUtils.copyLarge(cacheFileBlob.getBinaryStream(), response.getOutputStream());
+        try {
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cacheFileName + "\"");
+            response.setContentLengthLong(cacheFileBlob.length());
+            response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+            response.setHeader(HttpHeaders.LAST_MODIFIED, cacheFile.getUploadDateTime().toInstant(ZoneOffset.UTC).toString());
+            IOUtils.copyLarge(cacheFileBlob.getBinaryStream(), response.getOutputStream());
+        } catch (SQLException | IOException e) {
+            log.error("Some unexpected error occurred!");
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -93,11 +97,17 @@ public class CacheFileController {
 
             CacheFileInfoDto cacheFileInfoDto = cacheFileMapper.toDto(savedCacheFile);
             return ResponseEntity.ok(cacheFileInfoDto);
-        } catch (UnsuccessfulCacheMergeException | NoNewCacheEntryException e) {
-            // TODO: Return more descriptive error messages here
+        } catch (UnsuccessfulCacheMergeException e) {
+            log.error("Cache merge failed! Maybe posted an invalid cache file was posted?");
+            return ResponseEntity.unprocessableEntity()
+                    .build();
+        } catch (NoNewCacheEntryException e) {
+            log.error("Cache merge is unnecessary because it contains no new cache entries. Dropping it...");
             return ResponseEntity.unprocessableEntity()
                     .build();
         } catch (IOException | SQLException e) {
+            log.error("Some unexpected error occurred!");
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
