@@ -192,6 +192,13 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    void emptyDatabase_deleteUserByRandomId_shouldReturn404NotFound() {
+        long randomId = 1234L;
+        assertThat(requestUtils.deleteUser(randomId).getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
     void oneUserStored_deleteUser_getAllUsers_shouldReturnEmptyArray() {
         ResponseEntity<UserInfoDto> userCreationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(userCreationResponse.getBody()).isNotNull();
