@@ -147,18 +147,18 @@ public class RequestUtils {
         return restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(gameUpdateDto), GameInfoDto.class);
     }
 
-    public ResponseEntity<UserInfoDto> deleteUser(long userId) {
+    public ResponseEntity<Void> deleteUser(long userId) {
         String url = "%s/%d".formatted(USER_ENDPOINT_URL, userId);
-        return restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, UserInfoDto.class);
+        return restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
     }
 
-    public ResponseEntity<CacheFileInfoDto> deleteCacheFile(long cacheFileId) {
+    public ResponseEntity<Void> deleteCacheFile(long cacheFileId) {
         String url = "%s/%d".formatted(CACHE_FILE_ENDPOINT_URL, cacheFileId);
-        return restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, CacheFileInfoDto.class);
+        return restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
     }
 
-    public ResponseEntity<GameInfoDto> deleteGame(long gameId) {
+    public ResponseEntity<Void> deleteGame(long gameId) {
         String url = "%s/%d".formatted(GAME_ENDPOINT_URL, gameId);
-        return restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, GameInfoDto.class);
+        return restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
     }
 }
