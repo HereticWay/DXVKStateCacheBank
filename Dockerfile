@@ -16,5 +16,8 @@ RUN chmod +x /bin/dxvk-cache-tool
 COPY --from=builder /Sources/target/*.jar /App/app.jar
 WORKDIR /App
 
+RUN adduser -S -D -H dxvk-cachebank-runner
+
+USER dxvk-cachebank-runner
 EXPOSE 8080
 CMD java -jar app.jar --spring.profiles.active=prod
