@@ -27,6 +27,8 @@ public class TestData {
 
     public static final User SAMPLE_USER = User.builder()
             .id(644L)
+            .name("Samantha1")
+            .email("abc@def.com")
             .build();
 
     public static final Game SAMPLE_GAME = Game.builder()
