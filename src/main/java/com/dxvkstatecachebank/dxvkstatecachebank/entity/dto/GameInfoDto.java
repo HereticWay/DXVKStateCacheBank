@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 public class GameInfoDto {
     private Long id;
     private String name;
+    private String cacheFileName;
     @JsonInclude(Include.NON_NULL)
     private String incrementalCacheFileLink;
     @JsonInclude(Include.NON_NULL)

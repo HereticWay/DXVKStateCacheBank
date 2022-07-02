@@ -16,6 +16,7 @@ public class GameMapper {
         return GameInfoDto.builder()
                 .id(game.getId())
                 .name(game.getName())
+                .cacheFileName(game.getCacheFileName())
                 .incrementalCacheFileLink(incrementalCacheLastModified.isPresent() ? "/game/%d/incremental_cache_file".formatted(game.getId()) : null)
                 .incrementalCacheLastModified(incrementalCacheLastModified.orElse(null))
                 .cacheFilesLink("/game/%d/cache_files".formatted(game.getId()))
