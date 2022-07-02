@@ -4,15 +4,18 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.*;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
+import com.dxvkstatecachebank.dxvkstatecachebank.util.dto.FileStreamSizeDto;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.ResponseExtractor;
+
+import java.io.InputStream;
+import java.util.Arrays;
 
 import static com.dxvkstatecachebank.dxvkstatecachebank.data.TestData.*;
 
@@ -56,6 +59,36 @@ public class RequestUtils {
     public ResponseEntity<CacheFileInfoDto> getCacheFile(Long cacheFileId) {
         String url = "%s/%d".formatted(CACHE_FILE_ENDPOINT_URL, cacheFileId);
         return restTemplate.getForEntity(url, CacheFileInfoDto.class);
+    }
+
+    public FileStreamSizeDto getFileStreamSize(String url) {
+        RequestCallback requestCallback = request -> request.getHeaders()
+                .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
+
+        ResponseExtractor<FileStreamSizeDto> responseExtractor = response -> {
+            if(response.getStatusCode() != HttpStatus.OK) {
+                return FileStreamSizeDto.builder()
+                        .responseStatus(response.getStatusCode())
+                        .build();
+            }
+
+            // Count the bytes received from the server
+            InputStream inputStream = response.getBody();
+            long sumOfBytesReceived = 0L;
+            int bytesRead;
+            var readBuffer = new byte[8192];
+            while ((bytesRead = inputStream.read(readBuffer)) != -1) {
+                sumOfBytesReceived += bytesRead;
+            }
+
+            return FileStreamSizeDto.builder()
+                    .responseStatus(response.getStatusCode())
+                    .contentLengthHeader(response.getHeaders().getContentLength())
+                    .realFileLength(sumOfBytesReceived)
+                    .build();
+        };
+
+        return restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
     }
 
     public ResponseEntity<UserInfoDto> postUser(UserCreateDto userCreateDto, Resource profilePictureResource) {

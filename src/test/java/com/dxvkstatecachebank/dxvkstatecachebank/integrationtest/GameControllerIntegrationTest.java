@@ -1,6 +1,5 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.integrationtest;
 
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileInfoDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileUploadDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.GameInfoDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserInfoDto;
@@ -8,6 +7,7 @@ import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
 import com.dxvkstatecachebank.dxvkstatecachebank.util.RequestUtils;
+import com.dxvkstatecachebank.dxvkstatecachebank.util.dto.FileStreamSizeDto;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,19 +16,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RequestCallback;
-import org.springframework.web.client.ResponseExtractor;
 
-import java.io.InputStream;
-import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.io.IOException;
 
 import static com.dxvkstatecachebank.dxvkstatecachebank.data.TestData.*;
 import static org.assertj.core.api.Assertions.*;
@@ -130,7 +124,7 @@ public class GameControllerIntegrationTest {
     }
 
     @Test
-    void oneGameStoredWithIncrementalCacheFile_getGamesIncrementalCacheFile_shouldReturnCorrectLengthedCacheFile() {
+    void oneGameStoredWithIncrementalCacheFile_getGamesIncrementalCacheFile_returnedFileShouldBeTheCorrectLength() throws IOException {
         ResponseEntity<UserInfoDto> userCreationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(userCreationResponse.getBody()).isNotNull();
         long userId = userCreationResponse.getBody().getId();
@@ -148,30 +142,13 @@ public class GameControllerIntegrationTest {
                 SAMPLE_OVERWATCH_CACHE_FILE_1_RESOURCE
         );
 
-        RequestCallback requestCallback = request -> request.getHeaders()
-                .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
-
-        ResponseExtractor<Void> responseExtractor = response -> {
-            final long correctContentLength = SAMPLE_OVERWATCH_CACHE_FILE_1_RESOURCE.contentLength();
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            // Assert that content length header is correct
-            assertThat(response.getHeaders().getContentLength()).isEqualTo(correctContentLength);
-            InputStream inputStream = response.getBody();
-
-            // Count the bytes received from the server
-            long sumOfBytesReceived = 0L;
-            int bytesReceived;
-            var readBuffer = new byte[4096];
-            while ((bytesReceived = inputStream.read(readBuffer)) != -1) {
-                sumOfBytesReceived += bytesReceived;
-            }
-
-            // Assert the real length of the cache file we got back
-            assertThat(sumOfBytesReceived).isEqualTo(correctContentLength);
-            return null;
-        };
-
+        long correctContentLength = SAMPLE_OVERWATCH_CACHE_FILE_1_RESOURCE.contentLength();
         String url = "%s/%d/incremental_cache_file".formatted(GAME_ENDPOINT_URL, gameId);
-        restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
+        FileStreamSizeDto fileStreamSize = requestUtils.getFileStreamSize(url);
+        assertThat(fileStreamSize.getResponseStatus()).isEqualTo(HttpStatus.OK);
+        assertThat(fileStreamSize.getContentLengthHeader()).isEqualTo(correctContentLength);
+        assertThat(fileStreamSize.getRealFileLength()).isEqualTo(correctContentLength);
     }
+
+
 }

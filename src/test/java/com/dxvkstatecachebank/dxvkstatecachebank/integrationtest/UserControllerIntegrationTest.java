@@ -5,8 +5,8 @@ import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
 import com.dxvkstatecachebank.dxvkstatecachebank.util.RequestUtils;
+import com.dxvkstatecachebank.dxvkstatecachebank.util.dto.FileStreamSizeDto;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +21,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
@@ -181,37 +182,18 @@ class UserControllerIntegrationTest {
     }
 
     @Test
-    void oneUserStored_updateUserProfilePicture_getUserProfilePicture_shouldHaveCorrectFileLength() {
+    void oneUserStored_updateUserProfilePicture_getUserProfilePicture_shouldHaveCorrectFileLength() throws IOException {
         ResponseEntity<UserInfoDto> userCreationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(userCreationResponse.getBody()).isNotNull();
         long userId = userCreationResponse.getBody().getId();
         requestUtils.updateUserProfilePicture(userId, PROFILE_PIC_2_RESOURCE);
 
-        RequestCallback requestCallback = request -> request.getHeaders()
-                .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
-
-        ResponseExtractor<Void> responseExtractor = response -> {
-            final long correctContentLength = PROFILE_PIC_2_RESOURCE.contentLength();
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            // Assert that content length header is correct
-            assertThat(response.getHeaders().getContentLength()).isEqualTo(correctContentLength);
-            InputStream inputStream = response.getBody();
-
-            // Count the bytes received from the server
-            long sumOfBytesReceived = 0L;
-            int bytesReceived;
-            var readBuffer = new byte[4096];
-            while ((bytesReceived = inputStream.read(readBuffer)) != -1) {
-                sumOfBytesReceived += bytesReceived;
-            }
-
-            // Assert the real length of the cache file we got back
-            assertThat(sumOfBytesReceived).isEqualTo(correctContentLength);
-            return null;
-        };
-
+        final long correctContentLength = PROFILE_PIC_2_RESOURCE.contentLength();
         String url = "%s/%d/profile_picture".formatted(USER_ENDPOINT_URL, userId);
-        restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
+        FileStreamSizeDto fileStreamSize = requestUtils.getFileStreamSize(url);
+        assertThat(fileStreamSize.getResponseStatus()).isEqualTo(HttpStatus.OK);
+        assertThat(fileStreamSize.getContentLengthHeader()).isEqualTo(correctContentLength);
+        assertThat(fileStreamSize.getRealFileLength()).isEqualTo(correctContentLength);
     }
 
     @Test

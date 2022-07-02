@@ -5,6 +5,7 @@ import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
 import com.dxvkstatecachebank.dxvkstatecachebank.util.RequestUtils;
+import com.dxvkstatecachebank.dxvkstatecachebank.util.dto.FileStreamSizeDto;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -24,6 +25,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -183,7 +185,7 @@ class CacheFileControllerIntegrationTest {
     }
 
     @Test
-    void oneCacheFileStored_getCacheFileData_returnedFileShouldBeTheCorrectLength() {
+    void oneCacheFileStored_getCacheFileData_returnedFileShouldBeTheCorrectLength() throws IOException {
         ResponseEntity<UserInfoDto> userCreationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(userCreationResponse.getBody()).isNotNull();
         long userId = userCreationResponse.getBody().getId();
@@ -204,31 +206,12 @@ class CacheFileControllerIntegrationTest {
         long uploadedCacheId = cacheFileCreationResponse.getBody()
                 .getId();
 
-        RequestCallback requestCallback = request -> request.getHeaders()
-                .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
-
-        ResponseExtractor<Void> responseExtractor = response -> {
-            final long correctContentLength = SAMPLE_OVERWATCH_CACHE_FILE_1_RESOURCE.contentLength();
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            // Assert that content length header is correct
-            assertThat(response.getHeaders().getContentLength()).isEqualTo(correctContentLength);
-            InputStream inputStream = response.getBody();
-
-            // Count the bytes received from the server
-            long sumOfBytesReceived = 0L;
-            int bytesReceived;
-            var readBuffer = new byte[4096];
-            while ((bytesReceived = inputStream.read(readBuffer)) != -1) {
-                sumOfBytesReceived += bytesReceived;
-            }
-
-            // Assert the real length of the cache file we got back
-            assertThat(sumOfBytesReceived).isEqualTo(correctContentLength);
-            return null;
-        };
-
         String url = "%s/%d/data".formatted(CACHE_FILE_ENDPOINT_URL, uploadedCacheId);
-        restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
+        final long correctContentLength = SAMPLE_OVERWATCH_CACHE_FILE_1_RESOURCE.contentLength();
+        FileStreamSizeDto fileStreamSize = requestUtils.getFileStreamSize(url);
+        assertThat(fileStreamSize.getResponseStatus()).isEqualTo(HttpStatus.OK);
+        assertThat(fileStreamSize.getContentLengthHeader()).isEqualTo(correctContentLength);
+        assertThat(fileStreamSize.getRealFileLength()).isEqualTo(correctContentLength);
     }
 
     @Test
