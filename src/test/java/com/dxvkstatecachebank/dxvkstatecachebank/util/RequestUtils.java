@@ -56,9 +56,14 @@ public class RequestUtils {
         return restTemplate.getForEntity(url, CacheFileInfoDto[].class);
     }
 
-    public ResponseEntity<CacheFileInfoDto> getCacheFile(Long cacheFileId) {
+    public ResponseEntity<CacheFileInfoDto> getCacheFile(long cacheFileId) {
         String url = "%s/%d".formatted(CACHE_FILE_ENDPOINT_URL, cacheFileId);
         return restTemplate.getForEntity(url, CacheFileInfoDto.class);
+    }
+
+    public ResponseEntity<CacheFileInfoDto[]> getAllCacheFilesByGameId(long gameId) {
+        String url = "%s/%d/cache_files".formatted(GAME_ENDPOINT_URL, gameId);
+        return restTemplate.getForEntity(url, CacheFileInfoDto[].class);
     }
 
     public FileStreamSizeDto getFileStreamSize(String url) {
@@ -120,9 +125,9 @@ public class RequestUtils {
         return restTemplate.postForEntity(GAME_ENDPOINT_URL, gameCreateDto, GameInfoDto.class);
     }
 
-    public void updateUser(long userId, UserUpdateDto userUpdateDto) {
+    public ResponseEntity<UserInfoDto> updateUser(long userId, UserUpdateDto userUpdateDto) {
         String url = "%s/%d".formatted(USER_ENDPOINT_URL, userId);
-        restTemplate.put(url, userUpdateDto);
+        return restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(userUpdateDto), UserInfoDto.class);
     }
 
     public void updateUserProfilePicture(long userId, Resource profilePictureResource) {
@@ -137,13 +142,23 @@ public class RequestUtils {
         restTemplate.put(url, request);
     }
 
-    public void deleteUser(long userId) {
-        String url = "%s/%d".formatted(USER_ENDPOINT_URL, userId);
-        restTemplate.delete(url);
+    public ResponseEntity<GameInfoDto> updateGame(long gameId, GameUpdateDto gameUpdateDto) {
+        String url = "%s/%d".formatted(GAME_ENDPOINT_URL, gameId);
+        return restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(gameUpdateDto), GameInfoDto.class);
     }
 
-    public void deleteCacheFile(long cacheFileId) {
+    public ResponseEntity<UserInfoDto> deleteUser(long userId) {
+        String url = "%s/%d".formatted(USER_ENDPOINT_URL, userId);
+        return restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, UserInfoDto.class);
+    }
+
+    public ResponseEntity<CacheFileInfoDto> deleteCacheFile(long cacheFileId) {
         String url = "%s/%d".formatted(CACHE_FILE_ENDPOINT_URL, cacheFileId);
-        restTemplate.delete(url);
+        return restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, CacheFileInfoDto.class);
+    }
+
+    public ResponseEntity<GameInfoDto> deleteGame(long gameId) {
+        String url = "%s/%d".formatted(GAME_ENDPOINT_URL, gameId);
+        return restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, GameInfoDto.class);
     }
 }
