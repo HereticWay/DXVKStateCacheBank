@@ -212,6 +212,12 @@ class CacheFileControllerIntegrationTest {
     }
 
     @Test
+    void emptyDatabase_deleteCacheFileByRandomId_shouldReturn404NotFound() {
+        long randomId = 9831L;
+        assertThat(requestUtils.deleteCacheFile(randomId).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
     void twoCacheFilesStored_deleteSecondOne_getFirstOne_shoudlReturnFirstOne_getSecondOne_shouldReturn404NotFound() {
         ResponseEntity<UserInfoDto> userCreationResponse = requestUtils.postUser(SAMPLE_USER_CREATE_DTO_1, PROFILE_PIC_1_RESOURCE);
         assertThat(userCreationResponse.getBody()).isNotNull();
@@ -236,7 +242,8 @@ class CacheFileControllerIntegrationTest {
         assertThat(cacheFile2CreationResponse.getBody()).isNotNull();
         long secondCacheFileId = cacheFile2CreationResponse.getBody().getId();
 
-        requestUtils.deleteCacheFile(secondCacheFileId);
+        assertThat(requestUtils.deleteCacheFile(secondCacheFileId).getStatusCode())
+                .isEqualTo(HttpStatus.OK);
 
         assertThat(requestUtils.getCacheFile(firstCacheFileId).getStatusCode())
                 .isEqualTo(HttpStatus.OK);
