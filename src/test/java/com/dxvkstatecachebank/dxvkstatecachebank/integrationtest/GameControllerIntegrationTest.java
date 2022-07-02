@@ -231,7 +231,7 @@ public class GameControllerIntegrationTest {
     @Test
     void emptyDatabase_deleteGameByRandomId_shouldReturn404NotFound() {
         long randomGameId = 43278L;
-        ResponseEntity<GameInfoDto> response = requestUtils.deleteGame(randomGameId);
+        ResponseEntity<Void> response = requestUtils.deleteGame(randomGameId);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
