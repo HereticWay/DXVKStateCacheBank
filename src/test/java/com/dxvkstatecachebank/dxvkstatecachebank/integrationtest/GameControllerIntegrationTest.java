@@ -12,24 +12,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 
 import static com.dxvkstatecachebank.dxvkstatecachebank.data.TestData.*;
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ActiveProfiles(profiles = {"test"})
 @Slf4j
 public class GameControllerIntegrationTest {
@@ -50,7 +45,7 @@ public class GameControllerIntegrationTest {
 
     @BeforeEach
     @AfterEach
-    void cleanupBeforeEach() {
+    void cleanup() {
         cacheFileService.deleteAll();
         gameService.deleteAll();
         userService.deleteAll();
@@ -149,6 +144,4 @@ public class GameControllerIntegrationTest {
         assertThat(fileStreamSize.getContentLengthHeader()).isEqualTo(correctContentLength);
         assertThat(fileStreamSize.getRealFileLength()).isEqualTo(correctContentLength);
     }
-
-
 }
