@@ -1,9 +1,13 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.data;
 
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.User;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.GameCreateDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserCreateDto;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
+
+import java.time.LocalDateTime;
 
 public class TestData {
     public static final String USER_ENDPOINT_URL = "/user";
@@ -20,6 +24,32 @@ public class TestData {
             .password("12345")
             .email("spider.murphy@citromail.hu")
             .build();
+
+    public static final User SAMPLE_USER = User.builder()
+            .id(644L)
+            .build();
+
+    public static final Game SAMPLE_GAME = Game.builder()
+            .id(3222L)
+            .build();
+
+    public static final Game SAMPLE_GAME_WITH_INCREMENTAL_CACHE =
+            Game.builder()
+                    .id(3222L)
+                    .name("Some Game")
+                    .cacheFileName("somegame1")
+                    .incrementalCacheLastModified(LocalDateTime.now())
+                    .steamId(453L)
+                    .build();
+
+    public static final Game SAMPLE_GAME_WITH_NO_INCREMENTAL_CACHE =
+            Game.builder()
+                    .id(3333L)
+                    .name("Some Other Game")
+                    .cacheFileName("someothergame")
+                    .incrementalCacheLastModified(null)
+                    .steamId(111L)
+                    .build();
 
     public static final GameCreateDto SAMPLE_GAME_CREATE_DTO_APEX = GameCreateDto.builder()
             .name("Apex Legends")
