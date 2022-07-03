@@ -1,3 +1,5 @@
+*Read this in other languages: [English](README.md), [Hungarian](README.hu.md).*
+
 # About
 This project aims to solve the problem of storing and automatically
 merging dxvk pipeline state cache files to a single "incremental" cache file
