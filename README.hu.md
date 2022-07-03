@@ -92,3 +92,20 @@ Profilt **itt nem** szükséges megadni!<br>
 ## Futtatás Windows alól
 A futtatás Windows alól csak **WSL Docker konténerben** támogatott.<br>
 Lásd: [*A program futtatása*](#a-program-futtatása), [*Futtatás Dockerben*](#futtatás-dockerben)
+
+# Black-box tesztelés Postman-nel
+- Sajnos newman tesztek elkészítésére már nem volt időm, ezért manuálisan lehet caak kívülről tesztelni a projektet
+- Indítsd el a programot Dockerben (lásd: [*Futtatás Dockerben*](#futtatás-dockerben))
+- Használd a következő [Postman Workspace](https://www.postman.com/science-saganist-76503499/workspace/cc-dxvk-state-cache-bank/collection/19640926-f241d113-7f3d-4bb9-b59b-1111afe55f89?ctx=documentation)-t
+  tesztelésre.
+- Példa cache és profilkép fájlokat a Postman kérések futtatásához találsz a projekt resources/sample mappájában
+- Egy példa a tesztelésre, a program működésének szemléltetése érdekében:
+  1. Egy Game posztolása
+  2. Egy User posztolása
+  3. r5apex-barely-populated.dxvk-cache CacheFile posztolása a létrehozott User-ként a létrehozott Game-hez -
+     El kell tárolnia a cache file-t és 200OK-t kell visszaadnia. Incremental cache-ben is létre kell jönnie a fájlnak.
+  4. r5apex-highly-populated.dxvk-cache CacheFile posztolása a létrehozott User-ként a létrehozott Game-hez -
+     El kell tárolnia a cache file-t és 200OK-t kell visszaadnia. Incremental cache-ben az összevont fájlnak kell lennie.
+  5. r5apex-barely-populated.dxvk-cache CacheFile újraposztolása a létrehozott User-ként a létrehozott Game-hez -
+     Nem szabad eltárolnia a cache file-t és 422 UNPROCESSABLE_ENTITY-t kell visszaadnia, mert ugyanazt a cache
+     file-t posztolva már nem hoztunk be új cache entry-t. Incremental cache nem szabad hogy változzon.

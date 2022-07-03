@@ -90,3 +90,20 @@ $ env PATH=$PATH:/path/to/dxvk-cache-tool-directory ./mvnw spring-boot:run -Dspr
 ## Run under Windows
 Running under Windows is only supported through **Docker/WSL**.<br>
 See: [*Running the program*](#running-the-program), [*Running with Docker*](#running-with-docker)
+
+# Black-box testing with Postman
+- Unfortunately I had no time left to make Newman tests so the project can only be tested manually from outside (black-box testing)
+- Start the program in Docker (See: [*Running with Docker*](#running-with-docker))
+- Use the following [Postman Workspace](https://www.postman.com/science-saganist-76503499/workspace/cc-dxvk-state-cache-bank/collection/19640926-f241d113-7f3d-4bb9-b59b-1111afe55f89?ctx=documentation)
+  for testing
+- You can find example profile pictures and cache files in the project's resources/sample directory
+- One example of testing, to better understand how the program works:
+  1. Post a Game
+  2. Post a User
+  3. Post r5apex-barely-populated.dxvk-cache CacheFile as the created User for the created Game -
+     It should store the cache file and return 200OK. Incremental cache should be created too.
+  4. Post r5apex-highly-populated.dxvk-cache CacheFile as the created User for the created Game -
+     It should store the cache file and return 200OK. Incremental cache should be the merge of the two caches.
+  5. Post r5apex-barely-populated.dxvk-cache CacheFile again as the created User for the created Game -
+     It should not store the cache file and return 422 UNPROCESSABLE_ENTITY because the uploaded cache
+     does not introduce any new cache entries. Incremental cache should not change.
