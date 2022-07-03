@@ -3,14 +3,43 @@
 # About
 This project aims to solve the problem of storing and automatically merging dxvk pipeline
 state cache files to a single "incremental" cache file per application that can be distributed
-later across multiple devices.
+later across multiple devices. One example of manually doing this work can be read [here](https://www.reddit.com/r/linux_gaming/comments/t5xrho/dxvk_state_cache_for_fixing_stutter_in_apex/).
 
 The idea is that users can register to the api and contribute state cache files that their
 application generated and my backend would store it and automatically merge it using the
-dxvk-cache-tool to the latest "incremental" cache of the application. The latest incremental
-cache can be downloaded by anybody, user account is not required.
+dxvk-cache-tool to the latest "incremental" cache of the application, no manual work needed.
+The latest incremental cache can be downloaded by anybody, user account is not required.
 
 > *Note:* that there's no UI for this program, it only exposes REST endpoints
+
+# What's completed
+- Use of DTOs
+- Validating DTOs
+- Store/Update/Delete Games
+- Store/Update/Delete Users
+- Store/Delete Cache files
+- Automatically merge together cache files game by game (incremental caches)
+- Streaming binary files from/to database
+- Drop invalid cache files
+- Drop cache files that doesn't introduce new entries
+- Integration and Unit tests
+- Running asynchronously
+- Some basic logging
+- Use of PostgreSQL backend
+- Swagger documentation
+- Flyway migrations
+  - One .sql file migration (V1)
+  - And one Java migration (V2)
+
+# What's not completed
+Because of time constraints I couldn't finish every planned functions:
+- HTTP Basic Authentication. Currently users have to specidy a password but it will be stored
+  in plain text and never gets used later. The program doesn't authenticate any endpoints.
+- Automatic Newman black-box tests
+- Validate User profile pictures
+- Validate cache files properly in byte level. Currently the program pipes all cache files
+  through dxvk-cache-tool for validation. If it returns an error code, then the cache file
+  is sure not valid. This is not the best practice in my opinion, but was a fast solution.
 
 # Endpoints
 See the endpoints at the [**Wiki page**](https://github.com/HereticWay/DXVKStateCacheBank/wiki)

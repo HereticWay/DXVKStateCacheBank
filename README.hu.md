@@ -3,15 +3,46 @@
 # A projektről
 Ez a projekt a "DXVK pipeline state cache" fájlok tárolását és automatikus összevonását
 hivatott megoldani alkalmazásonként egyetlen növekvő "incremental cache file"-ba, amelyet
-később több eszköz között is meg lehet osztani.
+később több eszköz között is meg lehet osztani. Egy példa ennek a manuális megvalósítására
+olvasható [itt](https://www.reddit.com/r/linux_gaming/comments/t5xrho/dxvk_state_cache_for_fixing_stutter_in_apex/).
 
 Az ötlet az, hogy különböző felhasználók regisztrálhatnak az API-hoz és megoszthatják
-az alkalmazásuk által generált "cache" fájljaikat azon keresztül, melyet a backend
-eltárol és a dxvk-cache-tool nevű programmal az alkalmazáshoz tartozó növekvő "cache"
-fájllal összevonja. Az aktuális növekvő "cache" fájlt bárki bármikor letöltheti, regisztráció
+az alkalmazásuk által generált "cache" fájljaikat, melyet a backend eltárol és a 
+dxvk-cache-tool nevű programmal az alkalmazáshoz tartozó növekvő "cache" fájllal
+összevonja. Az aktuális növekvő "cache" fájlt bárki bármikor letöltheti, regisztráció
 nem szükséges hozzá.
 
 > *Megjegyzés:* a program nem ad UI-t, csak REST végpontokat szolgáltat
+
+# Ami készen van
+- DTO-k használata
+- DTO-k validációja
+- Játékprogramok eltárolása/frissítlse/törlése
+- Felhasználók eltárolása/frissítlse/törlése
+- Cache fájlok eltárolása/törlése
+- Cache fájlok automatikus összevonása játékonként 1-1 növekvő cache fájlba
+- Bináris fájlok stream-elése adatbázisból/-ba
+- Érvénytelen cache fájlok visszadobása
+- Olyan Cache fájlok visszadobása, melyek nem hoznak be új cache entry-t
+- Integrációs és egységtesztek
+- Aszinkronos futtatás
+- Egyszerű logolás
+- PostgreSQL backend használata
+- Swagger dokumentáció
+- Flyway adatbázis migráció:
+  - Egy .sql fájl migráció (V1)
+  - Egy Java migráció (V2)
+
+# Ami nincs kész
+Az idő szorítása miatt nem sikerült elkészítenem minden tervezett funkciót. Amik kimaradtak:
+- HTTP Basic Authentication. Jelenleg a felhasználóknak meg kell adniuk egy jelszót, de az
+  titkosítatlanul kerül eltárolásra és nem kerül felhasználásra sehol sem. A program nem
+  használ jelenleg egyetlen endpointjához sem authentikációt.
+- Automatikus Newman black box tesztek írása
+- Felhasználó profilképek validálása
+- Cache fájlok byte szintű validálása. Jelenleg a validációt úgy végzi a program, hogy minden
+  egyes cache fájlon lefuttatja a dxvk-cache-tool -t és ha az hibakóddal tér vissza, akkor a
+  cache file mindenbizonnyal hibás. Szerintem nem a legjobb megoldás, de egy gyors megoldás.
 
 # Végpontok
 A végpontok láthatóak a [**Wiki oldalon**](https://github.com/HereticWay/DXVKStateCacheBank/wiki)
