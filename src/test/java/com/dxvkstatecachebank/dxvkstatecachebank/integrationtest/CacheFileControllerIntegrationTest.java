@@ -1,6 +1,9 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.integrationtest;
 
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.*;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileInfoDto;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileUploadDto;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.GameInfoDto;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserInfoDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;

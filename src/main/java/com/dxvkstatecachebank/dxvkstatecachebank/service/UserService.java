@@ -40,10 +40,6 @@ public class UserService {
         return userRepository.existsById(userId);
     }
 
-    public void flush() {
-        userRepository.flush();
-    }
-
     public void deleteAll() {
         userRepository.deleteAll();
     }

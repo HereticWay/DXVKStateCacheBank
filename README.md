@@ -21,7 +21,7 @@ The latest incremental cache can be downloaded by anybody, user account is not r
 - Automatically merge together cache files game by game (incremental caches)
 - Streaming binary files from/to database
 - Drop invalid cache files
-- Drop cache files that doesn't introduce new entries
+- Drop cache files that don't introduce new entries
 - Integration and Unit tests
 - Running asynchronously
 - Some basic logging
@@ -30,14 +30,15 @@ The latest incremental cache can be downloaded by anybody, user account is not r
 - Flyway migrations
   - One .sql file migration (V1)
   - And one Java migration (V2)
+- Dockerization
 
 # What's not completed
 Because of time constraints I couldn't finish every planned functions:
-- HTTP Basic Authentication. Currently users have to specidy a password but it will be stored
+- HTTP Basic Authentication. Currently, users have to specify a password, but it will be stored
   in plain text and never gets used later. The program doesn't authenticate any endpoints.
 - Automatic Newman black-box tests
 - Validate User profile pictures
-- Validate cache files properly in byte level. Currently the program pipes all cache files
+- Validate cache files properly in byte level. Currently, the program pipes all cache files
   through dxvk-cache-tool for validation. If it returns an error code, then the cache file
   is sure not valid. This is not the best practice in my opinion, but was a fast solution.
 

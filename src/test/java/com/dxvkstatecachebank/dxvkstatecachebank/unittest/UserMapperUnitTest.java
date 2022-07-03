@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static com.dxvkstatecachebank.dxvkstatecachebank.data.TestData.SAMPLE_USER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

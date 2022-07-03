@@ -41,10 +41,6 @@ public class GameService {
         gameRepository.deleteById(gameId);
     }
 
-    public void flush() {
-        gameRepository.flush();
-    }
-
     public void deleteAll() {
         gameRepository.deleteAll();
     }

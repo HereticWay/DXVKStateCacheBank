@@ -13,12 +13,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jdk.jfr.ContentType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -30,7 +28,6 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.http.HttpResponse;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.time.ZoneOffset;
@@ -132,7 +129,7 @@ public class CacheFileController {
             )
     })
     public ResponseEntity<CacheFileInfoDto> uploadCacheFile(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("cacheFileUploadDto") CacheFileUploadDto cacheFileUploadDto, BindingResult bindingResult) {
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             log.error("Validation error:");
             bindingResult.getAllErrors().forEach(err -> log.error(err.getDefaultMessage()));
             return ResponseEntity.unprocessableEntity().build();
@@ -174,7 +171,7 @@ public class CacheFileController {
             )
     })
     public ResponseEntity<Void> deleteCacheFile(@PathVariable("cacheFileId") Long cacheFileId) {
-        if(!cacheFileService.existsById(cacheFileId)) {
+        if (!cacheFileService.existsById(cacheFileId)) {
             log.error("Cache file id: {} could not be found", cacheFileId);
             return ResponseEntity.notFound().build();
         }

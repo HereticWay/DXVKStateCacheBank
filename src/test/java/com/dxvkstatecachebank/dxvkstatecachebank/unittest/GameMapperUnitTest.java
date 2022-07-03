@@ -6,10 +6,10 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.GameMapper;
 import org.junit.jupiter.api.Test;
 
 import static com.dxvkstatecachebank.dxvkstatecachebank.data.TestData.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class GameMapperUnitTest {
-    private GameMapper gameMapper = new GameMapper();
+    private final GameMapper gameMapper = new GameMapper();
 
     @Test
     void testToDtoWithGameThatHasIncrementalCache() {

@@ -20,7 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.io.IOException;
 
 import static com.dxvkstatecachebank.dxvkstatecachebank.data.TestData.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(profiles = {"test"})

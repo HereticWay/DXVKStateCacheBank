@@ -115,7 +115,7 @@ public class GameController {
                 .orElseThrow();
         Blob cacheFileBlob = game.getIncrementalCacheFile();
         try {
-            if(cacheFileBlob == null || cacheFileBlob.length() == 0) {
+            if (cacheFileBlob == null || cacheFileBlob.length() == 0) {
                 log.error("There's no incremental cache for the following game id {}", gameId);
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
@@ -150,7 +150,7 @@ public class GameController {
             )
     })
     public ResponseEntity<List<CacheFileInfoDto>> listCacheFilesForGameId(@PathVariable("gameId") Long gameId) {
-        if(!gameService.existsById(gameId)) {
+        if (!gameService.existsById(gameId)) {
             log.error("Game id: {} could not be found", gameId);
             return ResponseEntity.notFound().build();
         }
@@ -177,7 +177,7 @@ public class GameController {
             )
     })
     public ResponseEntity<GameInfoDto> createGame(@Valid @RequestBody GameCreateDto gameCreateDto, BindingResult bindingResult) {
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             log.error("Validation error:");
             bindingResult.getAllErrors().forEach(err -> log.error(err.getDefaultMessage()));
             return ResponseEntity.unprocessableEntity().build();
@@ -207,12 +207,12 @@ public class GameController {
             )
     })
     public ResponseEntity<GameInfoDto> updateGame(@PathVariable("gameId") Long gameId, @Valid @RequestBody GameUpdateDto gameUpdateDto, BindingResult bindingResult) {
-        if(!gameService.existsById(gameId)) {
+        if (!gameService.existsById(gameId)) {
             log.error("Game id: {} could not be found", gameId);
             return ResponseEntity.notFound().build();
         }
 
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             log.error("Validation error:");
             bindingResult.getAllErrors().forEach(err -> log.error(err.getDefaultMessage()));
             return ResponseEntity.unprocessableEntity().build();
@@ -241,7 +241,7 @@ public class GameController {
             )
     })
     public ResponseEntity<Void> deleteGame(@PathVariable("gameId") Long gameId) {
-        if(!gameService.existsById(gameId)) {
+        if (!gameService.existsById(gameId)) {
             return ResponseEntity.notFound().build();
         }
 

@@ -155,10 +155,6 @@ public class CacheFileService {
         return cacheFileRepository.existsById(cacheFileId);
     }
 
-    public void flush() {
-        cacheFileRepository.flush();
-    }
-
     public void disownAllFromUploaderId(Long uploaderId) {
         cacheFileRepository.disownAllFromUploaderId(uploaderId);
     }
