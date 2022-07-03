@@ -9,6 +9,11 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.GameMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +50,14 @@ public class GameController {
     }
 
     @GetMapping
+    @Operation(summary = "Get all Games")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = GameInfoDto[].class))
+            )
+    })
     public List<GameInfoDto> listAllGames() {
         return gameService.findAll().stream()
                 .map(gameMapper::toDto)
@@ -52,6 +65,19 @@ public class GameController {
     }
 
     @GetMapping("/{gameId}")
+    @Operation(summary = "Get game by id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = GameInfoDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Game not found",
+                    content = @Content
+            )
+    })
     public ResponseEntity<GameInfoDto> findGameById(@PathVariable("gameId") Long gameId) {
         if (!gameService.existsById(gameId)) {
             log.error("Game id: {} could not be found", gameId);
@@ -65,6 +91,19 @@ public class GameController {
 
     @Transactional
     @GetMapping("/{gameId}/incremental_cache_file")
+    @Operation(summary = "Get game's incremental cache file by game id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Game not found",
+                    content = @Content
+            )
+    })
     public void getLatestIncrementalCacheFile(@PathVariable("gameId") Long gameId, HttpServletResponse response) {
         if (!gameService.existsById(gameId)) {
             log.error("Game id: {} could not be found", gameId);
@@ -97,6 +136,19 @@ public class GameController {
     }
 
     @GetMapping("/{gameId}/cache_files")
+    @Operation(summary = "Get contributed cache files for game by game id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = CacheFileInfoDto[].class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Game not found",
+                    content = @Content
+            )
+    })
     public ResponseEntity<List<CacheFileInfoDto>> listCacheFilesForGameId(@PathVariable("gameId") Long gameId) {
         if(!gameService.existsById(gameId)) {
             log.error("Game id: {} could not be found", gameId);
@@ -111,6 +163,19 @@ public class GameController {
     }
 
     @PostMapping
+    @Operation(summary = "Create new Game")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = GameInfoDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "The dto is not valid",
+                    content = @Content
+            )
+    })
     public ResponseEntity<GameInfoDto> createGame(@Valid @RequestBody GameCreateDto gameCreateDto, BindingResult bindingResult) {
         if(bindingResult.hasErrors()) {
             log.error("Validation error:");
@@ -123,6 +188,24 @@ public class GameController {
     }
 
     @PutMapping("/{gameId}")
+    @Operation(summary = "Update Game")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = GameInfoDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Game not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "The dto is not valid",
+                    content = @Content
+            )
+    })
     public ResponseEntity<GameInfoDto> updateGame(@PathVariable("gameId") Long gameId, @Valid @RequestBody GameUpdateDto gameUpdateDto, BindingResult bindingResult) {
         if(!gameService.existsById(gameId)) {
             log.error("Game id: {} could not be found", gameId);
@@ -144,6 +227,19 @@ public class GameController {
     }
 
     @DeleteMapping("/{gameId}")
+    @Operation(summary = "Delete game by its id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Game not found",
+                    content = @Content
+            )
+    })
     public ResponseEntity<Void> deleteGame(@PathVariable("gameId") Long gameId) {
         if(!gameService.existsById(gameId)) {
             return ResponseEntity.notFound().build();

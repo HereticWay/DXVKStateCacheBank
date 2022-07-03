@@ -8,10 +8,17 @@ import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.exceptions.NoNewCacheEntryException;
 import com.dxvkstatecachebank.dxvkstatecachebank.exceptions.UnsuccessfulCacheMergeException;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jdk.jfr.ContentType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -23,6 +30,7 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.http.HttpResponse;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.time.ZoneOffset;
@@ -42,6 +50,19 @@ public class CacheFileController {
     }
 
     @GetMapping("/{cacheFileId}")
+    @Operation(summary = "Find cache file by its id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = CacheFileInfoDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Cache file not found",
+                    content = @Content
+            )
+    })
     public ResponseEntity<CacheFileInfoDto> findCacheFileById(@PathVariable("cacheFileId") Long cacheFileId) {
         if (!cacheFileService.existsById(cacheFileId)) {
             log.error("Cache file id: {} could not be found", cacheFileId);
@@ -56,6 +77,19 @@ public class CacheFileController {
 
     @Transactional
     @GetMapping("/{cacheFileId}/data")
+    @Operation(summary = "Get cache file data by cache file id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Cache file not found",
+                    content = @Content
+            )
+    })
     public void getCacheFileData(@PathVariable("cacheFileId") Long cacheFileId, HttpServletResponse response) {
         if (!cacheFileService.existsById(cacheFileId)) {
             log.error("Cache file id: {} could not be found", cacheFileId);
@@ -84,6 +118,19 @@ public class CacheFileController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload cache file")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = CacheFileInfoDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "The dto is not valid or the cache file is not valid or the cache file contains no new cache entries",
+                    content = @Content
+            )
+    })
     public ResponseEntity<CacheFileInfoDto> uploadCacheFile(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("cacheFileUploadDto") CacheFileUploadDto cacheFileUploadDto, BindingResult bindingResult) {
         if(bindingResult.hasErrors()) {
             log.error("Validation error:");
@@ -113,6 +160,19 @@ public class CacheFileController {
     }
 
     @DeleteMapping("/{cacheFileId}")
+    @Operation(summary = "Delete cache file by its id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = CacheFileInfoDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Cache file not found",
+                    content = @Content
+            )
+    })
     public ResponseEntity<Void> deleteCacheFile(@PathVariable("cacheFileId") Long cacheFileId) {
         if(!cacheFileService.existsById(cacheFileId)) {
             log.error("Cache file id: {} could not be found", cacheFileId);

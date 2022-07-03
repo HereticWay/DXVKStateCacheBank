@@ -1,14 +1,16 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.controller;
 
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.User;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileInfoDto;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserCreateDto;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserInfoDto;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserUpdateDto;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.*;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.UserMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.hibernate.engine.jdbc.BlobProxy;
@@ -46,6 +48,14 @@ public class UserController {
     }
 
     @GetMapping
+    @Operation(summary = "Get all Users")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = UserInfoDto[].class))
+            )
+    })
     public List<UserInfoDto> listAllUsers() {
         return userService.findAll().stream()
                 .map(userMapper::toDto)
@@ -53,6 +63,19 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
+    @Operation(summary = "Get User by id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = UserInfoDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            )
+    })
     public ResponseEntity<UserInfoDto> findUserById(@PathVariable("userId") Long userId) {
         if (!userService.existsById(userId)) {
             log.error("User id: {} could not be found", userId);
@@ -67,6 +90,19 @@ public class UserController {
 
     @Transactional
     @GetMapping("/{userId}/profile_picture")
+    @Operation(summary = "Get User's profile picture by user id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            )
+    })
     public void getProfilePictureByUserId(@PathVariable("userId") Long userId, HttpServletResponse response) {
         if (!userService.existsById(userId)) {
             log.error("User id: {} could not be found", userId);
@@ -90,6 +126,19 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/cache_files")
+    @Operation(summary = "Get contributed cache files of User by its id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = CacheFileInfoDto[].class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            )
+    })
     public ResponseEntity<List<CacheFileInfoDto>> findCacheFileByUserId(@PathVariable("userId") Long userId) {
         if (!userService.existsById(userId)) {
             log.error("User id: {} could not be found", userId);
@@ -106,6 +155,19 @@ public class UserController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Create new User")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = UserInfoDto.class))
+            ),
+            @ApiResponse(
+                responseCode = "422",
+                description = "The dto is not valid",
+                content = @Content
+            )
+    })
     public ResponseEntity<UserInfoDto> createUser(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("userCreateDto") UserCreateDto userCreateDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             log.error("Validation error:");
@@ -124,6 +186,24 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
+    @Operation(summary = "Update User")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = UserInfoDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "The dto is not valid",
+                    content = @Content
+            )
+    })
     public ResponseEntity<UserInfoDto> updateUser(@PathVariable("userId") Long userId, @Valid @RequestBody UserUpdateDto userUpdateDto, BindingResult bindingResult) {
         if(!userService.existsById(userId)) {
             log.error("User id: {} could not be found", userId);
@@ -145,6 +225,19 @@ public class UserController {
     }
 
     @PutMapping(value = "/{userId}/profile_picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Update User profile picture")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = UserInfoDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            )
+    })
     public ResponseEntity<UserInfoDto> updateUserProfilePicture(@PathVariable("userId") Long userId, @RequestPart("file") MultipartFile multipartFile) {
         if(!userService.existsById(userId)) {
             log.error("User id: {} could not be found", userId);
@@ -164,6 +257,19 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
+    @Operation(summary = "Delete User")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            )
+    })
     public ResponseEntity<Void> deleteUser(@PathVariable("userId") Long userId) {
         if(!userService.existsById(userId)) {
             log.error("User id: {} could not be found", userId);
