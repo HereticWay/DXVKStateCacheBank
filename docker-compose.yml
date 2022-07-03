@@ -3,6 +3,7 @@ version: "3.9"
 services:
   dxvk-cache-bank:
     build: .
+    container_name: dxvk-cache-bank-Madar-Adam
     ports:
       - "8080:8080"
     depends_on:
@@ -11,6 +12,7 @@ services:
   # This service will be used in the future
   postgresql:
     image: postgres:14.3-alpine3.16
+    container_name: dxvk-cache-bank-postgres-Madar-Adam
     ports:
       - "5430:5432"
     environment:

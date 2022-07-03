@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.sql.Blob;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -30,6 +31,8 @@ public class Game {
 
     @Lob
     private Blob incrementalCacheFile;
+
+    private LocalDateTime incrementalCacheLastModified;
 
     @OneToMany(mappedBy = "game")
     private List<CacheFile> cacheFiles;

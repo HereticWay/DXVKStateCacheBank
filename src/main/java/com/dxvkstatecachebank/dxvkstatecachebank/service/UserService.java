@@ -10,11 +10,14 @@ import java.util.Optional;
 
 @Service
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final CacheFileService cacheFileService;
 
     @Autowired
-    private CacheFileService cacheFileService;
+    public UserService(UserRepository userRepository, CacheFileService cacheFileService) {
+        this.userRepository = userRepository;
+        this.cacheFileService = cacheFileService;
+    }
 
     public User save(User user) {
         return userRepository.save(user);
@@ -39,5 +42,9 @@ public class UserService {
 
     public void flush() {
         userRepository.flush();
+    }
+
+    public void deleteAll() {
+        userRepository.deleteAll();
     }
 }

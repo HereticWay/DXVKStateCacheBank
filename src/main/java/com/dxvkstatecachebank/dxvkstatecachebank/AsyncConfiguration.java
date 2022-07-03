@@ -1,7 +1,6 @@
 package com.dxvkstatecachebank.dxvkstatecachebank;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
@@ -22,9 +21,8 @@ import java.util.concurrent.Callable;
 @Configuration
 @EnableAsync
 @EnableScheduling
+@Slf4j
 public class AsyncConfiguration implements AsyncConfigurer {
-
-    private final Logger log = LoggerFactory.getLogger(AsyncConfiguration.class);
 
     @Override
     @Bean(name = "taskExecutor")
