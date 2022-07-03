@@ -32,6 +32,7 @@ nem szükséges hozzá.
 - Flyway adatbázis migráció:
   - Egy .sql fájl migráció (V1)
   - Egy Java migráció (V2)
+- Dockerizáció
 
 # Ami nincs kész
 Az idő szorítása miatt nem sikerült elkészítenem minden tervezett funkciót. Amik kimaradtak:

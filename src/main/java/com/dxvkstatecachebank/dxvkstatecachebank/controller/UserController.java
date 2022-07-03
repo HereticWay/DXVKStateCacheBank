@@ -1,7 +1,10 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.controller;
 
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.User;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.*;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileInfoDto;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserCreateDto;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserInfoDto;
+import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.UserUpdateDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.UserMapper;
 import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
@@ -28,7 +31,6 @@ import java.io.IOException;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
@@ -163,9 +165,9 @@ public class UserController {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = UserInfoDto.class))
             ),
             @ApiResponse(
-                responseCode = "422",
-                description = "The dto is not valid",
-                content = @Content
+                    responseCode = "422",
+                    description = "The dto is not valid",
+                    content = @Content
             )
     })
     public ResponseEntity<UserInfoDto> createUser(@RequestPart("file") MultipartFile multipartFile, @Valid @RequestPart("userCreateDto") UserCreateDto userCreateDto, BindingResult bindingResult) {
@@ -205,12 +207,12 @@ public class UserController {
             )
     })
     public ResponseEntity<UserInfoDto> updateUser(@PathVariable("userId") Long userId, @Valid @RequestBody UserUpdateDto userUpdateDto, BindingResult bindingResult) {
-        if(!userService.existsById(userId)) {
+        if (!userService.existsById(userId)) {
             log.error("User id: {} could not be found", userId);
             return ResponseEntity.notFound().build();
         }
 
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             log.error("Validation error:");
             bindingResult.getAllErrors().forEach(err -> log.error(err.getDefaultMessage()));
             return ResponseEntity.unprocessableEntity().build();
@@ -239,7 +241,7 @@ public class UserController {
             )
     })
     public ResponseEntity<UserInfoDto> updateUserProfilePicture(@PathVariable("userId") Long userId, @RequestPart("file") MultipartFile multipartFile) {
-        if(!userService.existsById(userId)) {
+        if (!userService.existsById(userId)) {
             log.error("User id: {} could not be found", userId);
             return ResponseEntity.notFound().build();
         }
@@ -271,7 +273,7 @@ public class UserController {
             )
     })
     public ResponseEntity<Void> deleteUser(@PathVariable("userId") Long userId) {
-        if(!userService.existsById(userId)) {
+        if (!userService.existsById(userId)) {
             log.error("User id: {} could not be found", userId);
             return ResponseEntity.notFound().build();
         }

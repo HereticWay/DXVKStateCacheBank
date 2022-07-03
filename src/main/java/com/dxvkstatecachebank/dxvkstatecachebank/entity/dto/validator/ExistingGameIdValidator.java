@@ -19,7 +19,7 @@ public class ExistingGameIdValidator implements ConstraintValidator<ExistingGame
 
     @Override
     public boolean isValid(Long value, ConstraintValidatorContext context) {
-        if(value == null)
+        if (value == null)
             return false;
 
         return gameService.existsById(value);

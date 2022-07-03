@@ -1,7 +1,6 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.unittest;
+
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.CacheFile;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.Game;
-import com.dxvkstatecachebank.dxvkstatecachebank.entity.User;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileInfoDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.CacheFileUploadDto;
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.mapper.CacheFileMapper;
@@ -19,7 +18,7 @@ import java.util.Optional;
 
 import static com.dxvkstatecachebank.dxvkstatecachebank.data.TestData.SAMPLE_GAME;
 import static com.dxvkstatecachebank.dxvkstatecachebank.data.TestData.SAMPLE_USER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)

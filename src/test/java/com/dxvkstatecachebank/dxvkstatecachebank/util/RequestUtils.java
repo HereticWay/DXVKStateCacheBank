@@ -1,9 +1,6 @@
 package com.dxvkstatecachebank.dxvkstatecachebank.util;
 
 import com.dxvkstatecachebank.dxvkstatecachebank.entity.dto.*;
-import com.dxvkstatecachebank.dxvkstatecachebank.service.CacheFileService;
-import com.dxvkstatecachebank.dxvkstatecachebank.service.GameService;
-import com.dxvkstatecachebank.dxvkstatecachebank.service.UserService;
 import com.dxvkstatecachebank.dxvkstatecachebank.util.dto.FileStreamSizeDto;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.Resource;
@@ -22,15 +19,9 @@ import static com.dxvkstatecachebank.dxvkstatecachebank.data.TestData.*;
 @Component
 public class RequestUtils {
     private final TestRestTemplate restTemplate;
-    private final CacheFileService cacheFileService;
-    private final GameService gameService;
-    private final UserService userService;
 
-    public RequestUtils(TestRestTemplate restTemplate, CacheFileService cacheFileService, GameService gameService, UserService userService) {
+    public RequestUtils(TestRestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.cacheFileService = cacheFileService;
-        this.gameService = gameService;
-        this.userService = userService;
     }
 
     public ResponseEntity<UserInfoDto> getUserById(Long userId) {
@@ -71,7 +62,7 @@ public class RequestUtils {
                 .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
 
         ResponseExtractor<FileStreamSizeDto> responseExtractor = response -> {
-            if(response.getStatusCode() != HttpStatus.OK) {
+            if (response.getStatusCode() != HttpStatus.OK) {
                 return FileStreamSizeDto.builder()
                         .responseStatus(response.getStatusCode())
                         .build();
