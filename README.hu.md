@@ -14,7 +14,8 @@ nem szükséges hozzá.
 > *Megjegyzés:* a program nem ad UI-t, csak REST végpontokat szolgáltat
 
 # Végpontok
-A végpontok láthatóak program futása közben a [**Swagger dokumentációban**](http://127.0.0.1:8080/swagger-ui.html).
+A végpontok láthatóak a [**Wiki oldalon**](https://github.com/HereticWay/DXVKStateCacheBank/wiki)
+vagy a program futása közben a [**Swagger dokumentációban**](http://127.0.0.1:8080/swagger-ui.html).
 
 # A program futtatása
 Jelenleg a programom csak Dockerrel, vagy Linux alatt futtatható, mert a
