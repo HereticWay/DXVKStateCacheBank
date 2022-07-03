@@ -17,6 +17,9 @@ nem szükséges hozzá.
 A végpontok láthatóak a [**Wiki oldalon**](https://github.com/HereticWay/DXVKStateCacheBank/wiki)
 vagy a program futása közben a [**Swagger dokumentációban**](http://127.0.0.1:8080/swagger-ui.html).
 
+# Az adatbázis tábláinak ER Diagramja
+![Cannot load the picture](https://github.com/HereticWay/DXVKStateCacheBank/raw/docs/docs/db-er-diagram.png)
+
 # A program futtatása
 Jelenleg a programom csak Dockerrel, vagy Linux alatt futtatható, mert a
 dxvk-cache-tool alkalmazásnak nincs natív Windows kiadása.
@@ -42,6 +45,10 @@ Szükségletek:
 - egy **futtatási profil** kiválasztása.
 
 ### A szükséges PostgreSQL szerver elindítása
+Az adatbázis kívülről a következő adatokkal lesz elérhető:<br>
+url: `//localhost:5430/dxvk-cache-bank-db`<br>
+user: postgres<br>
+password: pass<br>
 ```shell
 $ docker run \
     -it \

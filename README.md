@@ -16,6 +16,9 @@ cache can be downloaded by anybody, user account is not required.
 See the endpoints at the [**Wiki page**](https://github.com/HereticWay/DXVKStateCacheBank/wiki)
 or at the [**Swagger documentation**](http://127.0.0.1:8080/swagger-ui.html) while the program is running.
 
+# ER Diagram of database tables
+![Cannot load the picture](https://github.com/HereticWay/DXVKStateCacheBank/raw/docs/docs/db-er-diagram.png)
+
 # Running the program
 Currently the program can only run under Docker or Linux. Windows is not supported, because
 the dxvk-cache-tool does not have a native Windows build.
@@ -41,6 +44,10 @@ Requirements:
 - choosing an **active run profile**.
 
 ### Starting the PostgreSQL server
+The database will be available from the outside at:<br>
+url: `//localhost:5430/dxvk-cache-bank-db`<br>
+user: postgres<br>
+password: pass<br>
 ```shell
 $ docker run \
     -it \
